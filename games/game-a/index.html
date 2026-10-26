@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>블랙컴뱃 · RE:ROLL game-a</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet" />
+    <style>
+      /* 단독 실행 시 스크롤바가 생기지 않도록 */
+      html,
+      body,
+      #root {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- 단독 실행 진입점. 메인 게임은 이 파일 대신 src/index.js를 사용합니다. -->
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
