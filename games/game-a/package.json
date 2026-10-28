@@ -1,8 +1,8 @@
 {
-  "name": "re-roll-game-a-blackcombat",
+  "name": "re-roll-game-a-pfc",
   "private": true,
-  "version": "0.1.0",
-  "description": "RE:ROLL 미니게임 game-a — 블랙컴뱃 킥복싱 대전 (단독 테스트용 프로젝트)",
+  "version": "0.4.0",
+  "description": "RE:ROLL 미니게임 game-a — PFC (마법사 vs 격투가 1:1 대결, 단독 테스트용 프로젝트)",
   "type": "module",
   "scripts": {
     "dev": "vite",
