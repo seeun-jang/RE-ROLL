@@ -1,56 +1,47 @@
 // =============================================================
-//  메인 게임에 전달할 결과 데이터 만들기
+//  메인 게임에 전달할 결과 데이터
 //
-//  {
-//    gameId: 'game-a',
-//    scores: [ { playerId: 'p1', score: 100 }, { playerId: 'p2', score: 46 } ],
-//    details: { ... }   // 참고용 추가 정보 (메인 게임에서 안 써도 됨)
-//  }
+//  { gameId: 'game-a', scores: [{ playerId, score }, ...], details: { ... 참고용 } }
 //
-//  점수 규칙
-//    - 승자: 100점
-//    - 패자: 상대에게 준 데미지 비율 × 80점 (0 ~ 80)
-//    - 무승부: 둘 다 100점
+//  점수 = 준 데미지 + 명중 수 + 이긴 라운드×25 + 최종 승리 +30
+//  승자 점수는 항상 패자보다 높음 → 점수 순위 = 경기 승패 / 무승부는 같은 점수
 // =============================================================
 
-import { GAME_ID, MATCH, SCORE } from '../config.js';
+import { GAME_ID, RESULT_SCORE } from '../config.js';
 
 export function buildResult(match) {
-  const isDraw = match.winnerId === null;
   const ids = match.playerIds;
+  const { winnerId, wins, rounds } = match.result;
+  const raw = Object.fromEntries(
+    ids.map((id) => {
+      const s = match.fighters[id].stats;
+      return [id, Math.round(s.damage * RESULT_SCORE.damage + s.landed * RESULT_SCORE.landed + wins[id] * RESULT_SCORE.roundWin)];
+    }),
+  );
 
-  const scores = ids.map((id) => {
-    const me = match.fighters[id];
-    let score;
-    if (isDraw || id === match.winnerId) {
-      score = SCORE.winner;
-    } else {
-      const ratio = Math.max(0, Math.min(1, me.stats.damageDealt / MATCH.maxHp));
-      score = Math.round(ratio * SCORE.loserMax);
-    }
-    return { playerId: id, score };
-  });
-
-  const players = ids.map((id) => {
-    const f = match.fighters[id];
-    return {
-      playerId: id,
-      rank: isDraw || id === match.winnerId ? 1 : 2,
-      hp: Math.round(f.hp),
-      damageDealt: f.stats.damageDealt,
-      hitsLanded: f.stats.hitsLanded,
-      blocked: f.stats.blocked,
-    };
-  });
+  if (winnerId) {
+    const loserId = ids.find((id) => id !== winnerId);
+    raw[winnerId] += RESULT_SCORE.matchWin;
+    raw[winnerId] = Math.max(raw[winnerId], raw[loserId] + 1);
+  } else {
+    const avg = Math.round(ids.reduce((sum, id) => sum + raw[id], 0) / ids.length);
+    for (const id of ids) raw[id] = avg;
+  }
 
   return {
     gameId: GAME_ID,
-    scores,
+    scores: ids.map((id) => ({ playerId: id, score: raw[id] })),
     details: {
-      winner: match.winnerId,           // 'p1' | 'p2' | null(무승부)
-      reason: match.reason,             // 'ko' | 'decision'(판정) | 'draw'
-      fightTimeMs: Math.round(match.elapsed * 1000),
-      players,
+      winner: winnerId,          // 'p1' | 'p2' | null(무승부)
+      wins,                      // 라운드 승수 { p1: 2, p2: 1 }
+      rounds,                    // [{ winner, method: 'ko' | 'time' | 'draw', time }]
+      fightTimeSec: Math.round(match.elapsed * 10) / 10,
+      players: ids.map((id) => ({
+        playerId: id,
+        character: match.fighters[id].player.kind, // 'tiger' | 'professor'
+        rank: !winnerId || id === winnerId ? 1 : 2,
+        ...match.fighters[id].stats,
+      })),
     },
   };
 }
