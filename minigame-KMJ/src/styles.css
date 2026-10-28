@@ -1,0 +1,937 @@
+/* 다른 팀원 스타일과 겹치지 않도록 모든 클래스에 kmj- 를 붙였습니다 */
+
+.kmj-root {
+  --kmj-kr: 'Black Han Sans', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --kmj-epic: 'Cinzel', 'Black Han Sans', serif;
+  --kmj-gold: #f2c35b;
+  --kmj-ink: #fff4dc;
+  --kmj-dark: #1a0a02;
+  font-family: var(--kmj-kr);
+  color: var(--kmj-ink);
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.kmj-stage {
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 1.6cqw;
+  overflow: hidden;
+  background: #1c0f30;
+  box-shadow: 0 0 0 0.35cqw var(--kmj-gold), 0 2cqw 5cqw rgba(0, 0, 0, 0.5);
+}
+
+.kmj-canvas,
+.kmj-backdrop {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.kmj-screen {
+  position: absolute;
+  inset: 0;
+}
+
+.kmj-backdrop {
+  position: absolute;
+  inset: 0;
+  filter: brightness(0.8) saturate(1.1);
+}
+
+.kmj-screen-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1cqw;
+  padding: 2cqw;
+  text-align: center;
+  background: radial-gradient(ellipse at center, rgba(20, 6, 0, 0.1) 30%, rgba(20, 6, 0, 0.6) 100%);
+}
+
+.kmj-eyebrow {
+  font-family: var(--kmj-epic);
+  font-size: 1.4cqw;
+  letter-spacing: 0.4em;
+  color: var(--kmj-gold);
+}
+
+.kmj-logo {
+  margin: 0;
+  font-size: 7.4cqw;
+  font-weight: normal;
+  line-height: 1;
+  background: linear-gradient(180deg, #fffbe6 0%, #f8d77a 45%, #c47a1c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0.4cqw 0 #3a1404) drop-shadow(0 0 2.2cqw rgba(255, 150, 50, 0.55));
+  animation: kmj-glow 2.4s ease-in-out infinite alternate;
+}
+
+.kmj-logo-small {
+  font-size: 5.6cqw;
+}
+
+.kmj-sub {
+  margin: 0;
+  font-size: 1.7cqw;
+  color: #f4dcc0;
+  text-shadow: 0 0.2cqw 0.4cqw #000;
+}
+
+.kmj-versus {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+  margin: 1.2cqw 0;
+}
+
+.kmj-vs {
+  font-family: var(--kmj-epic);
+  font-weight: 700;
+  font-size: 5cqw;
+  color: var(--kmj-gold);
+  text-shadow: 0 0 1.6cqw rgba(255, 120, 40, 0.9), 0 0.3cqw 0 #3a1404;
+  animation: kmj-pulse 1s ease-in-out infinite alternate;
+}
+
+.kmj-hero-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3cqw;
+  width: 25cqw;
+  padding: 0.6cqw 1.2cqw 1cqw;
+  background: linear-gradient(180deg, rgba(40, 16, 4, 0.85), rgba(15, 5, 0, 0.9));
+  border: 0.25cqw solid var(--kmj-gold);
+  border-radius: 1cqw;
+  box-shadow: 0 0 2cqw color-mix(in srgb, var(--kmj-accent) 55%, transparent), inset 0 0 1.4cqw rgba(0, 0, 0, 0.6);
+}
+
+.kmj-portrait {
+  width: 15cqw;
+  height: 15cqw;
+}
+
+.kmj-hero-name {
+  font-size: 2.6cqw;
+  letter-spacing: 0.05em;
+}
+
+.kmj-tag {
+  font-family: var(--kmj-epic);
+  font-size: 1.3cqw;
+  background: var(--kmj-accent);
+  color: #fff;
+  border-radius: 0.4cqw;
+  padding: 0.1cqw 0.6cqw;
+  vertical-align: 0.25cqw;
+}
+
+.kmj-hero-side {
+  font-size: 1.3cqw;
+  color: var(--kmj-accent);
+}
+
+.kmj-keys {
+  display: flex;
+  gap: 1cqw;
+  font-size: 1.2cqw;
+  color: #c9ad8a;
+  margin-top: 0.3cqw;
+}
+
+.kmj-keys kbd {
+  min-width: 2.4cqw;
+  border-bottom: 0.3cqw solid var(--kmj-lane);
+}
+
+.kmj-keys kbd {
+  font-family: inherit;
+  color: var(--kmj-dark);
+  background: linear-gradient(180deg, #fbe08a, #c99236);
+  border-radius: 0.4cqw;
+  padding: 0 0.5cqw;
+  box-shadow: 0 0.2cqw 0 #6a4010;
+}
+
+.kmj-rules {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 0.5cqw 1.6cqw;
+  font-size: 1.3cqw;
+  color: #f4dcc0;
+  text-align: left;
+  text-shadow: 0 0.15cqw 0.3cqw #000;
+}
+
+.kmj-rules span {
+  margin-right: 0.4cqw;
+}
+
+.kmj-btn {
+  font-family: var(--kmj-kr);
+  font-size: 2.1cqw;
+  color: var(--kmj-ink);
+  background: rgba(20, 8, 2, 0.85);
+  border: 0.25cqw solid var(--kmj-gold);
+  border-radius: 0.6cqw;
+  padding: 0.6cqw 3cqw;
+  cursor: pointer;
+  box-shadow: 0 0.45cqw 0 #5a3410;
+  transition: transform 0.08s, box-shadow 0.08s, filter 0.15s;
+}
+
+.kmj-btn:hover {
+  transform: translateY(-0.15cqw);
+  filter: brightness(1.15);
+}
+
+.kmj-btn:active {
+  transform: translateY(0.35cqw);
+  box-shadow: 0 0.1cqw 0 #5a3410;
+}
+
+.kmj-title .kmj-btn-primary {
+  font-size: 2.4cqw;
+  padding: 0.7cqw 4.5cqw;
+  letter-spacing: 0.15em;
+}
+
+.kmj-btn-primary {
+  color: var(--kmj-dark);
+  background: linear-gradient(180deg, #fff1b0, #f2c35b 50%, #c47a1c);
+  box-shadow: 0 0.45cqw 0 #6a3a08, 0 0 2.4cqw rgba(255, 170, 60, 0.6);
+}
+
+.kmj-btn small {
+  font-family: var(--kmj-epic);
+  font-size: 0.6em;
+  margin-left: 0.4em;
+  opacity: 0.7;
+}
+
+.kmj-btn-row {
+  display: flex;
+  gap: 1.6cqw;
+  margin-top: 0.6cqw;
+}
+
+.kmj-mute {
+  position: absolute;
+  top: 1.2cqw;
+  right: 1.2cqw;
+  width: 3.6cqw;
+  height: 3.6cqw;
+  font-size: 1.7cqw;
+  border-radius: 50%;
+  border: 0.2cqw solid var(--kmj-gold);
+  background: rgba(20, 8, 2, 0.7);
+  cursor: pointer;
+  z-index: 5;
+}
+
+/* 게임 중에는 체력바와 겹치지 않게 아래로 */
+.kmj-canvas ~ .kmj-mute {
+  top: auto;
+  bottom: 2.6cqw;
+}
+
+/* 결과 화면 */
+.kmj-big-score {
+  font-family: var(--kmj-epic);
+  font-weight: 700;
+  font-size: 4.6cqw;
+  line-height: 1;
+  color: var(--kmj-gold);
+  text-shadow: 0 0 1.2cqw rgba(255, 170, 60, 0.6);
+}
+
+@keyframes kmj-glow {
+  from { filter: drop-shadow(0 0.4cqw 0 #3a1404) drop-shadow(0 0 1.4cqw rgba(255, 150, 50, 0.4)); }
+  to { filter: drop-shadow(0 0.4cqw 0 #3a1404) drop-shadow(0 0 3cqw rgba(255, 150, 50, 0.85)); }
+}
+
+@keyframes kmj-pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+
+/* ---------- 노래 불러오기 / AI 채보 ---------- */
+
+.kmj-stage.is-dragging {
+  box-shadow: 0 0 0 0.5cqw #fff27a, 0 0 4cqw rgba(255, 220, 100, 0.8);
+}
+
+.kmj-song-pick {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  min-height: 2.6cqw;
+  font-size: 1.4cqw;
+}
+
+.kmj-song-chip {
+  max-width: 40cqw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0.4cqw 1.4cqw;
+  border: 0.15cqw solid var(--kmj-gold);
+  border-radius: 999px;
+  background: rgba(20, 8, 2, 0.75);
+  color: #fff27a;
+}
+
+.kmj-song-hint {
+  color: #c9ad8a;
+}
+
+.kmj-link {
+  font-family: inherit;
+  font-size: 1.3cqw;
+  color: #c9ad8a;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.kmj-song-name {
+  max-width: 80cqw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 4.2cqw;
+  padding-bottom: 0.4cqw;
+}
+
+.kmj-steps {
+  list-style: none;
+  margin: 0.4cqw 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.4cqw;
+  width: 80cqw;
+}
+
+.kmj-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4cqw;
+  font-size: 1.3cqw;
+  text-align: left;
+  color: #8a7660;
+  transition: color 0.2s;
+}
+
+.kmj-step.is-active {
+  color: var(--kmj-ink);
+}
+
+.kmj-step.is-done {
+  color: var(--kmj-gold);
+}
+
+.kmj-step-bar {
+  height: 0.5cqw;
+  background: rgba(20, 8, 2, 0.8);
+  box-shadow: inset 0 0 0 0.1cqw rgba(242, 195, 91, 0.35);
+  overflow: hidden;
+}
+
+.kmj-step-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #c47a1c, #fff27a);
+  box-shadow: 0 0 1cqw #ffcf5a;
+  transition: width 0.2s;
+}
+
+.kmj-step.is-active .kmj-step-bar span {
+  animation: kmj-pulse 0.6s ease-in-out infinite alternate;
+}
+
+.kmj-step-detail {
+  font-size: 1cqw;
+  color: #c9ad8a;
+}
+
+.kmj-scope {
+  width: 80cqw;
+  height: 16cqw;
+  border-radius: 0.4cqw;
+  box-shadow: 0 0 3cqw rgba(0, 0, 0, 0.6);
+}
+
+.kmj-analyze {
+  gap: 0.9cqw;
+}
+
+.kmj-analyze .kmj-song-name {
+  font-size: 3.6cqw;
+}
+
+.kmj-song-card {
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+  margin: 0.4cqw 0;
+  animation: kmj-rise-plain 0.5s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+@keyframes kmj-rise-plain {
+  from { transform: translateY(2cqw); opacity: 0; }
+}
+
+.kmj-song-stats {
+  display: flex;
+  gap: 4cqw;
+}
+
+.kmj-song-stats div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.kmj-song-stats b {
+  font-family: var(--kmj-epic);
+  font-size: 3.4cqw;
+  line-height: 1;
+  color: #fff4dc;
+  text-shadow: 0 0 1.6cqw rgba(255, 150, 50, 0.7);
+}
+
+.kmj-song-stats span {
+  font-family: var(--kmj-epic);
+  font-size: 1.1cqw;
+  letter-spacing: 0.3em;
+  color: var(--kmj-gold);
+}
+
+.kmj-genres {
+  display: flex;
+  gap: 0.8cqw;
+}
+
+.kmj-genres span {
+  padding: 0.3cqw 1.2cqw;
+  border-radius: 999px;
+  font-size: 1.3cqw;
+  background: rgba(242, 195, 91, 0.15);
+  border: 0.12cqw solid rgba(242, 195, 91, 0.6);
+}
+
+.kmj-note {
+  font-size: 1.3cqw;
+  color: #c9ad8a;
+}
+
+.kmj-name-input {
+  width: 15cqw;
+  font-family: var(--kmj-kr);
+  font-size: 2.2cqw;
+  text-align: center;
+  color: var(--kmj-ink);
+  background: rgba(10, 4, 0, 0.6);
+  border: none;
+  border-bottom: 0.2cqw solid var(--kmj-accent, var(--kmj-gold));
+  border-radius: 0.6cqw 0.6cqw 0 0;
+  padding: 0.3cqw 0.6cqw;
+  outline: none;
+}
+
+.kmj-name-input::placeholder {
+  color: rgba(255, 244, 220, 0.35);
+}
+
+.kmj-name-input:focus {
+  background: rgba(10, 4, 0, 0.85);
+  box-shadow: 0 0.4cqw 1.2cqw -0.4cqw var(--kmj-accent, var(--kmj-gold));
+}
+
+/* ---------- 시작 화면: 캐릭터 선택창 ---------- */
+
+.kmj-select {
+  overflow: hidden;
+}
+
+.kmj-side {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 52%;
+  pointer-events: none;
+}
+
+.kmj-side.is-p1 {
+  left: 0;
+}
+
+.kmj-side.is-p2 {
+  right: 0;
+}
+
+.kmj-side-panel {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.05) 0 0.2cqw, transparent 0.2cqw 1.6cqw),
+    linear-gradient(90deg, color-mix(in srgb, var(--kmj-accent) 70%, transparent), color-mix(in srgb, var(--kmj-accent) 10%, transparent) 70%, transparent);
+  clip-path: polygon(0 0, 100% 0, 72% 100%, 0 100%);
+  animation: kmj-slide-l 0.6s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.kmj-side.is-p2 .kmj-side-panel {
+  background:
+    repeating-linear-gradient(65deg, rgba(255, 255, 255, 0.05) 0 0.2cqw, transparent 0.2cqw 1.6cqw),
+    linear-gradient(270deg, color-mix(in srgb, var(--kmj-accent) 70%, transparent), color-mix(in srgb, var(--kmj-accent) 10%, transparent) 70%, transparent);
+  clip-path: polygon(28% 0, 100% 0, 100% 100%, 0 100%);
+  animation-name: kmj-slide-r;
+}
+
+.kmj-side-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.25) 50%, transparent 60%);
+  background-size: 300% 100%;
+  animation: kmj-sweep 3.2s ease-in-out 0.6s infinite;
+}
+
+.kmj-side-hero {
+  position: absolute;
+  bottom: 10.5cqw;
+  width: 32cqw;
+  height: 32cqw;
+  filter: drop-shadow(0 0 2cqw color-mix(in srgb, var(--kmj-accent) 60%, transparent));
+  animation: kmj-hero-in 0.7s cubic-bezier(0.2, 0.9, 0.2, 1) 0.15s both;
+  transition: filter 0.3s;
+}
+
+.kmj-side.is-p1 .kmj-side-hero {
+  left: 2cqw;
+}
+
+.kmj-side.is-p2 .kmj-side-hero {
+  right: 2cqw;
+}
+
+.kmj-side.is-ready .kmj-side-hero {
+  filter: drop-shadow(0 0 3cqw var(--kmj-accent)) brightness(1.12);
+}
+
+.kmj-plate {
+  position: absolute;
+  bottom: 3.6cqw;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6cqw;
+  pointer-events: auto;
+  animation: kmj-slide-l 0.6s cubic-bezier(0.2, 0.9, 0.2, 1) 0.25s both;
+}
+
+.kmj-side.is-p1 .kmj-plate {
+  left: 4cqw;
+}
+
+.kmj-side.is-p2 .kmj-plate {
+  right: 4cqw;
+  align-items: flex-end;
+  animation-name: kmj-slide-r;
+}
+
+.kmj-plate-tag {
+  position: absolute;
+  top: -1.4cqw;
+  font-family: var(--kmj-epic);
+  font-weight: 700;
+  font-size: 1.3cqw;
+  letter-spacing: 0.2em;
+  color: var(--kmj-accent);
+  text-shadow: 0 0 1cqw var(--kmj-accent);
+}
+
+.kmj-side.is-p2 .kmj-plate-tag {
+  right: 0;
+}
+
+.kmj-select .kmj-name-input {
+  width: 22cqw;
+  font-size: 2.6cqw;
+  text-align: left;
+  padding: 0.5cqw 1.4cqw;
+  background: linear-gradient(90deg, rgba(10, 4, 0, 0.9), rgba(10, 4, 0, 0.55));
+  border: none;
+  border-left: 0.5cqw solid var(--kmj-accent);
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 92% 100%, 0 100%);
+}
+
+.kmj-side.is-p2 .kmj-name-input {
+  text-align: right;
+  border-left: none;
+  border-right: 0.5cqw solid var(--kmj-accent);
+  background: linear-gradient(270deg, rgba(10, 4, 0, 0.9), rgba(10, 4, 0, 0.55));
+  clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.kmj-select .kmj-name-input:focus {
+  box-shadow: none;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--kmj-accent) 45%, #0a0400), rgba(10, 4, 0, 0.6));
+}
+
+.kmj-side.is-p2 .kmj-name-input:focus {
+  background: linear-gradient(270deg, color-mix(in srgb, var(--kmj-accent) 45%, #0a0400), rgba(10, 4, 0, 0.6));
+}
+
+.kmj-select-top {
+  position: absolute;
+  top: 2.4cqw;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4cqw;
+  pointer-events: none;
+  animation: kmj-drop 0.7s cubic-bezier(0.2, 0.9, 0.2, 1) 0.2s both;
+}
+
+.kmj-select .kmj-logo {
+  font-size: 6.4cqw;
+}
+
+.kmj-vs-wrap {
+  position: absolute;
+  left: 50%;
+  top: 14cqw;
+  width: 12cqw;
+  height: 26cqw;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.kmj-bolt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  animation: kmj-flicker 2.2s steps(1) 0.9s infinite both;
+}
+
+.kmj-bolt polyline {
+  fill: none;
+  stroke: #fffbe0;
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 4px #fff27a) drop-shadow(0 0 12px #ffb347);
+}
+
+.kmj-select .kmj-vs {
+  position: relative;
+  font-size: 7.5cqw;
+  animation: kmj-slam 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) 0.6s both, kmj-pulse 1s ease-in-out 1.1s infinite alternate;
+}
+
+.kmj-select-bottom {
+  position: absolute;
+  bottom: 3.4cqw;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1cqw;
+  animation: kmj-rise 0.6s cubic-bezier(0.2, 0.9, 0.2, 1) 0.5s both;
+}
+
+.kmj-select .kmj-btn-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.9cqw;
+}
+
+.kmj-select .kmj-btn {
+  font-size: 1.8cqw;
+  padding: 0.5cqw 2.6cqw;
+}
+
+.kmj-select .kmj-btn-primary {
+  font-size: 2.4cqw;
+  padding: 0.8cqw 3.4cqw;
+  letter-spacing: 0.2em;
+  animation: kmj-ready 1.4s ease-in-out infinite alternate;
+}
+
+.kmj-select .kmj-song-pick {
+  font-size: 1.15cqw;
+  max-width: 26cqw;
+  text-align: center;
+}
+
+.kmj-select .kmj-song-chip {
+  max-width: 20cqw;
+}
+
+@keyframes kmj-slide-l {
+  from { transform: translateX(-60%); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes kmj-slide-r {
+  from { transform: translateX(60%); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes kmj-hero-in {
+  from { transform: translateY(6cqw) scale(0.85); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes kmj-drop {
+  from { transform: translateY(-6cqw); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes kmj-rise {
+  from { transform: translate(-50%, 4cqw); opacity: 0; }
+  to { transform: translateX(-50%); opacity: 1; }
+}
+
+@keyframes kmj-slam {
+  from { transform: scale(3.5); opacity: 0; filter: brightness(3); }
+  to { transform: scale(1); opacity: 1; filter: none; }
+}
+
+@keyframes kmj-sweep {
+  0% { background-position: 150% 0; }
+  60%, 100% { background-position: -50% 0; }
+}
+
+@keyframes kmj-flicker {
+  0% { opacity: 0; }
+  2% { opacity: 1; }
+  6% { opacity: 0.3; }
+  9% { opacity: 1; }
+  30% { opacity: 0.85; }
+  55% { opacity: 1; }
+  80% { opacity: 0.7; }
+}
+
+@keyframes kmj-ready {
+  from { box-shadow: 0 0.45cqw 0 #6a3a08, 0 0 1.6cqw rgba(255, 170, 60, 0.5); }
+  to { box-shadow: 0 0.45cqw 0 #6a3a08, 0 0 3.6cqw rgba(255, 200, 90, 0.95); }
+}
+
+/* ---------- 결과 화면 ---------- */
+
+.kmj-result .kmj-side-hero {
+  bottom: 17cqw;
+  width: 24cqw;
+  height: 24cqw;
+}
+
+.kmj-result .kmj-side.is-p1 .kmj-side-hero {
+  left: 9cqw;
+}
+
+.kmj-result .kmj-side.is-p2 .kmj-side-hero {
+  right: 9cqw;
+}
+
+.kmj-result-side.is-winner .kmj-side-hero {
+  filter: drop-shadow(0 0 3cqw var(--kmj-accent)) brightness(1.15);
+}
+
+.kmj-result-side.is-loser .kmj-side-panel,
+.kmj-result-side.is-loser .kmj-side-hero {
+  filter: grayscale(0.85) brightness(0.55);
+}
+
+.kmj-result-side.is-loser .kmj-result-card {
+  opacity: 0.75;
+}
+
+/* 승자 뒤로 회전하는 빛줄기 */
+.kmj-rays {
+  position: absolute;
+  bottom: 16cqw;
+  width: 44cqw;
+  height: 44cqw;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 240, 180, 0.32) 0deg 7deg, transparent 7deg 22deg);
+  mask-image: radial-gradient(circle, #000 15%, transparent 68%);
+  -webkit-mask-image: radial-gradient(circle, #000 15%, transparent 68%);
+  animation: kmj-spin 18s linear infinite, kmj-fade-in 1s ease 0.2s both;
+}
+
+.kmj-result-side.is-p1 .kmj-rays {
+  left: -1cqw;
+}
+
+.kmj-result-side.is-p2 .kmj-rays {
+  right: -1cqw;
+}
+
+/* 랭크 도장 */
+.kmj-rank {
+  position: absolute;
+  top: 12cqw;
+  font-family: var(--kmj-epic);
+  font-weight: 700;
+  font-size: 7cqw;
+  line-height: 1;
+  width: 9cqw;
+  height: 9cqw;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 0.45cqw solid currentColor;
+  transform: rotate(-12deg);
+  animation: kmj-stamp 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) 1.3s both;
+  text-shadow: 0 0 1.6cqw currentColor;
+  box-shadow: 0 0 2cqw currentColor, inset 0 0 1.2cqw currentColor;
+  background: rgba(10, 4, 0, 0.55);
+}
+
+.kmj-result-side.is-p1 .kmj-rank {
+  left: 30cqw;
+}
+
+.kmj-result-side.is-p2 .kmj-rank {
+  right: 30cqw;
+  transform: rotate(12deg);
+}
+
+.kmj-rank.is-S { color: #ffe066; }
+.kmj-rank.is-A { color: #8fd3ff; }
+.kmj-rank.is-B { color: #b8f0a0; }
+.kmj-rank.is-C { color: #c9ad8a; }
+
+.kmj-result-card {
+  position: absolute;
+  bottom: 3cqw;
+  width: 28cqw;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3cqw;
+  animation: kmj-slide-l 0.6s cubic-bezier(0.2, 0.9, 0.2, 1) 0.3s both;
+}
+
+.kmj-result-side.is-p1 .kmj-result-card {
+  left: 3cqw;
+}
+
+.kmj-result-side.is-p2 .kmj-result-card {
+  right: 3cqw;
+  align-items: flex-end;
+  animation-name: kmj-slide-r;
+}
+
+.kmj-result-name {
+  font-size: 2.2cqw;
+  color: #fff;
+  padding: 0.2cqw 1.2cqw;
+  border-left: 0.45cqw solid var(--kmj-accent);
+  background: linear-gradient(90deg, rgba(10, 4, 0, 0.85), transparent);
+}
+
+.kmj-result-side.is-p2 .kmj-result-name {
+  border-left: none;
+  border-right: 0.45cqw solid var(--kmj-accent);
+  background: linear-gradient(270deg, rgba(10, 4, 0, 0.85), transparent);
+}
+
+.kmj-result .kmj-big-score {
+  font-size: 4.4cqw;
+  color: #fff4dc;
+  text-shadow: 0 0 1.6cqw var(--kmj-accent), 0 0.3cqw 0 #000;
+}
+
+.kmj-stat-bars {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35cqw;
+  padding: 0.8cqw 1cqw;
+  background: rgba(10, 4, 0, 0.7);
+  border-top: 0.15cqw solid rgba(242, 195, 91, 0.5);
+}
+
+.kmj-stat-row {
+  display: grid;
+  grid-template-columns: 7.5cqw 1fr 3.6cqw;
+  align-items: center;
+  gap: 0.8cqw;
+  font-family: var(--kmj-epic);
+  font-size: 1.05cqw;
+  letter-spacing: 0.1em;
+  color: var(--kmj-bar, var(--kmj-gold));
+}
+
+.kmj-stat-row b {
+  text-align: right;
+  font-size: 1.3cqw;
+  color: #fff4dc;
+}
+
+.kmj-stat-row.is-combo {
+  grid-template-columns: 1fr auto;
+  margin-top: 0.2cqw;
+  color: var(--kmj-gold);
+}
+
+.kmj-stat-track {
+  height: 0.6cqw;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.kmj-stat-track span {
+  display: block;
+  height: 100%;
+  background: var(--kmj-bar);
+  box-shadow: 0 0 0.8cqw var(--kmj-bar);
+  transform-origin: left;
+  animation: kmj-grow 0.7s cubic-bezier(0.2, 0.9, 0.2, 1) var(--kmj-delay) both;
+}
+
+.kmj-result .kmj-select-bottom {
+  bottom: 4.4cqw;
+}
+
+@keyframes kmj-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes kmj-fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes kmj-stamp {
+  from { transform: scale(3) rotate(-30deg); opacity: 0; }
+}
+
+@keyframes kmj-grow {
+  from { transform: scaleX(0); }
+}
