@@ -1,0 +1,7 @@
+# 용량 큰 것 · 자동으로 만들어지는 것 (깃허브 · Render 에 안 올림)
+# AI 모델은 없으면 게임이 Hugging Face 에서 바로 받아 옴
+*/models/
+node_modules/
+server/cert/
+server/public-url.txt
+.DS_Store
