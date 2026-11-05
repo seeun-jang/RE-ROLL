@@ -1,0 +1,13 @@
+# Render 배포 설정 (Blueprint) — 깃허브 저장소를 연결하면 이대로 서버 하나가 만들어짐
+# 무료 요금제: 15분 동안 아무도 안 쓰면 잠들고, 다음 접속 때 1분쯤 걸려 깨어남
+services:
+  - type: web
+    name: reroll-party
+    runtime: node
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: node server/server.js
+    healthCheckPath: /_party/status
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
