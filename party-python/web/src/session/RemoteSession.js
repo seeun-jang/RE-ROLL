@@ -23,9 +23,14 @@ function saveToken(token) {
 }
 
 export class RemoteSession extends Emitter {
-  constructor({ url } = {}) {
+  /**
+   * @param {{ url?: string, hello?: object }} options
+   *   hello = 입장할 때 함께 보낼 값(보드게임이 띄운 미니게임: { tag, character })
+   */
+  constructor({ url, hello } = {}) {
     super();
     this.kind = 'remote';
+    this._hello = hello || {};
     this.url = url || `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`;
     this.me = null;
     this.room = null;
@@ -84,7 +89,7 @@ export class RemoteSession extends Emitter {
     }
     this._ws = ws;
     ws.onopen = () => {
-      this._send('hello', { name: this._name, token: this._token });
+      this._send('hello', { ...this._hello, name: this._name, token: this._token });
     };
     ws.onmessage = (e) => {
       let msg;

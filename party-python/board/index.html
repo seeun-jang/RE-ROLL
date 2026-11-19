@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RE:ROLL 파티</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="stage">
+    <!-- 메인 · 대기실 배경: 열쇠 그림을 픽셀로 -->
+    <canvas id="keyart" class="keyart"></canvas>
+
+    <!-- 1) 메인 화면 -->
+    <section id="scr-title" class="screen">
+      <div class="panel title-panel">
+        <div class="panel-ttl">🎲 파티 입장</div>
+        <label>내 이름</label>
+        <input id="in-name" maxlength="8" placeholder="최대 8글자" autocomplete="off" />
+        <div class="row">
+          <button id="btn-create" class="btn gold">방 만들기</button>
+        </div>
+        <div class="row">
+          <input id="in-code" maxlength="4" inputmode="numeric" placeholder="방 번호 4자리" autocomplete="off" />
+          <button id="btn-join" class="btn">방 참가</button>
+        </div>
+        <div id="title-msg" class="msg"></div>
+      </div>
+      <div id="conn" class="conn">서버 연결 중…</div>
+    </section>
+
+    <!-- 2) 대기실 -->
+    <section id="scr-lobby" class="screen hidden">
+      <div class="lobby-head">
+        <div>방 번호</div>
+        <div class="panel code-box"><b id="lobby-code" class="code">----</b></div>
+        <div class="hint">친구에게 이 번호를 알려주세요 · 빈 자리는 CPU 가 채워요</div>
+        <div id="lobby-url" class="share-url"></div>
+      </div>
+      <div id="seats" class="seats"></div>
+      <div class="lobby-foot">
+        <div id="turn-pick" class="turn-pick"></div>
+        <div id="lobby-action"></div>
+        <button id="btn-leave" class="btn dim">나가기</button>
+      </div>
+    </section>
+
+    <!-- 3) 보드 -->
+    <section id="scr-game" class="screen hidden">
+      <canvas id="board"></canvas>
+      <div id="hud-top" class="hud-top"></div>
+      <div class="map-box">
+        <canvas id="minimap" class="minimap" title="누르면 그곳으로"></canvas>
+        <button id="btn-map" class="btn map-btn">🗺️ 전체 지도 (Z)</button>
+      </div>
+      <div id="tip" class="tip hidden"></div>
+      <div id="cards" class="cards"></div>
+      <div id="log" class="log"></div>
+      <div id="prompt" class="prompt hidden"></div>
+      <div id="toasts" class="toasts"></div>
+      <div id="big" class="big hidden"></div>
+      <div id="mgresult" class="overlay hidden"></div>
+      <div id="end" class="overlay hidden"></div>
+    </section>
+  </div>
+
+  <!-- 미니게임 (화면 전체) -->
+  <section id="mg" class="mg hidden">
+    <div id="mg-intro" class="mg-intro"></div>
+    <iframe id="mg-frame" allow="camera *; microphone *; autoplay *; fullscreen *" class="hidden"></iframe>
+    <div id="mg-wait" class="mg-wait hidden"></div>
+  </section>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

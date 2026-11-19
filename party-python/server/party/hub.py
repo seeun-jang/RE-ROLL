@@ -32,6 +32,7 @@ class Participant:
         self.character = character  # 대기실에서 고른 캐릭터(동물) id
         self.token = secrets.token_hex(12)
         self.order = order          # 들어온 순서(방장 결정용)
+        self.tag: str | None = None  # 보드게임 쪽 참가자와 짝짓는 표식(보드가 띄운 미니게임에서만 쓴다)
         self.conn: Connection | None = None
 
     @property
@@ -61,11 +62,15 @@ class Hub:
         clock: Callable[[], float] = time.monotonic,
         rng_factory: Callable[[], Callable[[], float]] | None = None,
         services: dict | None = None,
+        prepare: bool = True,
     ):
         self.games = games
         #: 게임들이 함께 쓰는 서비스(음성 인식, Gemini 등). 게임을 만들 때 넘겨준다.
         self.services = dict(services or {})
-        for cls in games.values():
+        #: 게임이 끝났을 때 불리는 함수 (game_id, results, aborted). 보드게임이 결과를 받아 갈 때 쓴다.
+        self.on_game_end: Callable[[str, list, bool], None] | None = None
+        # prepare=False: 보드게임이 방마다 만드는 임시 허브 — 준비(문제 미리 만들기 등)는 서버가 켜질 때 한 번이면 된다
+        for cls in (games.values() if prepare else []):
             try:
                 cls.prepare(self.services)
             except Exception as exc:  # 준비 실패가 서버 시작을 막지 않게
@@ -174,7 +179,12 @@ class Hub:
             self._order += 1
             taken = {x.character for x in self.participants.values()}
             character = next(c for c in CHARACTERS if c not in taken)  # 남은 캐릭터 중 첫 번째
+            wanted = data.get("character")   # 보드게임에서 넘어온 사람은 보드의 캐릭터를 그대로 쓴다
+            if wanted in CHARACTERS and wanted not in taken:
+                character = wanted
             p = Participant(pid, self._unique_name(data.get("name")), self._order, character)
+            tag = data.get("tag")
+            p.tag = tag[:64] if isinstance(tag, str) and tag else None
             self.participants[pid] = p
         p.conn = conn
         conn.participant = p
@@ -248,6 +258,19 @@ class Hub:
                 conn, "bad_player_count",
                 f"이 게임은 {cls.min_players}~{cls.max_players}명이 필요합니다(지금 {len(members)}명).", "lobby.start",
             )
+        self._launch(cls, members)
+
+    def start_game(self, game_id: str) -> bool:
+        """서버가 직접 게임을 시작한다(보드게임의 미니게임 차례). 시작했으면 True."""
+        cls = self.games.get(game_id)
+        members = sorted((x for x in self.participants.values() if x.connected), key=lambda x: x.order)
+        if cls is None or self.phase != "lobby" or not (cls.min_players <= len(members) <= cls.max_players):
+            return False
+        self.game_id = game_id
+        self._launch(cls, members)
+        return True
+
+    def _launch(self, cls: type[MiniGame], members: list[Participant]) -> None:
         now = self.clock()
         self.run += 1
         self.game_players = [
@@ -332,6 +355,11 @@ class Hub:
         game = self.game
         results = [] if (aborted or game is None) else game.results
         payload = {"run": self.run, "gameId": self.game_id, "results": results, "aborted": aborted}
+        if self.on_game_end is not None:
+            try:
+                self.on_game_end(self.game_id or "", results, aborted)
+            except Exception as exc:  # 받아 가는 쪽의 오류로 게임 정리가 멈추지 않게
+                print(f"[party] on_game_end 오류: {exc!r}")
         for player in self.game_players:
             p = self.participants.get(player["id"])
             if p is not None and p.conn is not None:

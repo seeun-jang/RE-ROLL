@@ -19,23 +19,26 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from .board import BoardManager, attach_board
+from .board_bridge import board_minigames, make_minigame_runner
 from .games import GAMES
-from .hub import Hub
+from .rooms import HubPool
 from .services import create_services
 
 DIST_DIR = Path(__file__).resolve().parents[2] / "web" / "dist"
 
-hub = Hub(GAMES, services=create_services())
+# 미니게임 허브 묶음: 시험용 대기실 하나 + 보드게임이 미니게임 차례마다 만드는 임시 허브들
+pool = HubPool(GAMES, services=create_services())
+hub = pool.default
+# 보드게임(방 코드 · 주사위 · 칸 효과). 미니게임 차례에는 위 허브에서 서버 판정 게임을 돌린다.
+board = BoardManager(minigame_runner=make_minigame_runner(pool), minigames=board_minigames(GAMES))
 
 
 async def _tick_loop() -> None:
     """진행 중인 게임을 주기적으로 진행한다."""
     while True:
-        try:
-            hub.tick()
-        except Exception as exc:  # 게임 한 판의 오류로 서버 전체가 멈추지 않게
-            print(f"[party] tick 오류: {exc!r}")
-        await asyncio.sleep(hub.tick_interval)
+        pool.tick()   # 허브마다 자기 게임의 주기에 맞춰 진행한다(오류는 허브별로 잡는다)
+        await asyncio.sleep(1 / 120)
 
 
 @asynccontextmanager
@@ -63,6 +66,11 @@ async def health() -> dict:
 @app.websocket("/ws")
 async def ws_endpoint(websocket: WebSocket) -> None:
     await websocket.accept()
+    # /ws 는 시험용 대기실, /ws?room=<이름> 은 보드게임이 만든 미니게임 허브
+    hub = pool.get(websocket.query_params.get("room"))
+    if hub is None:
+        await websocket.close(code=4404)
+        return
     queue: asyncio.Queue[dict] = asyncio.Queue()
     conn = hub.connect(queue.put_nowait)
 
@@ -86,6 +94,9 @@ async def ws_endpoint(websocket: WebSocket) -> None:
         hub.disconnect(conn)
         writer_task.cancel()
 
+
+# 보드게임 화면(/party/)과 통신(/_party) — 아래의 '/' 화면 파일보다 먼저 붙인다
+attach_board(app, board)
 
 if DIST_DIR.is_dir():
     # 화면 파일은 맨 마지막에 붙인다(/api, /ws 가 먼저 처리되도록)

@@ -130,13 +130,26 @@ export const GAMES = Object.freeze({
  * import.meta.glob 은 "지금 있는 파일만" 묶어 준다 — 아직 만들지 않은 게임이 있어도 빌드가 깨지지 않는다.
  */
 function more(id, title) {
-  const screens = typeof import.meta.glob === 'function' ? import.meta.glob('./*/minigame.js') : {};
-  const sims = typeof import.meta.glob === 'function' ? import.meta.glob('./*/sim/Sim.js') : {};
   const pick = (table, path) => (table[path] ? table[path]() : import(/* @vite-ignore */ path));
   return {
     id, title, minPlayers: 2, maxPlayers: 5,
     howTo: HOW_TO[id] || '',
-    load: () => pick(screens, `./${id}/minigame.js`),
-    loadSim: () => pick(sims, `./${id}/sim/Sim.js`).then((m) => ({ Sim: m.Sim, createBots: m.createBots })),
+    load: () => pick(moreModules().screens, `./${id}/minigame.js`),
+    loadSim: () => pick(moreModules().sims, `./${id}/sim/Sim.js`).then((m) => ({ Sim: m.Sim, createBots: m.createBots })),
   };
+}
+/**
+ * 두 번째 묶음 게임의 화면 · 시험용 진행기 모듈 표. Vite 가 빌드할 때 import.meta.glob(...) 자리를
+ * "지금 있는 파일들"의 표로 바꿔 준다. Node(테스트)에서는 그 함수가 없어 오류가 나므로 빈 표를 쓴다.
+ */
+let cachedModules = null;
+function moreModules() {
+  if (!cachedModules) {
+    try {
+      cachedModules = { screens: import.meta.glob('./*/minigame.js'), sims: import.meta.glob('./*/sim/Sim.js') };
+    } catch (err) {
+      cachedModules = { screens: {}, sims: {} };
+    }
+  }
+  return cachedModules;
 }

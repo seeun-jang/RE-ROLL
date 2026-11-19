@@ -132,3 +132,9 @@ button.char.mine { background: #38b764; color: #1a1c2c; }
 button.char:disabled { background: #1a1c2c; color: #566c86; opacity: 0.7; }
 canvas.head { image-rendering: pixelated; display: block; }
 .who { display: flex; align-items: center; gap: 6px; }
+
+/* 보드게임 화면 안(iframe)에서 열렸을 때 — 여백 없이 미니게임만 */
+body.embed .view { padding: 0; }
+body.embed .banner { display: none; }
+.embed-wait { color: #f4f4f4; font-family: Galmuri11, monospace; font-size: 18px; text-align: center; padding: 24px; }
+body.embed #abort-btn { display: none; }   /* 건너뛰기는 보드 화면의 방장 버튼으로 한다 */

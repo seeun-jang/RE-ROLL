@@ -23,6 +23,10 @@ if (typeof document !== 'undefined' && document.fonts && document.fonts.load) {
 
 const query = new URLSearchParams(location.search);
 const IS_LOCAL = query.has('local');
+// 보드게임 화면 안(iframe)에서 열린 경우: 이름 입력·대기실 없이 바로 접속해 미니게임만 보여 준다.
+//   ?embed=1&room=<허브 이름>&name=<이름>&tag=<보드 참가자 표식>&character=<동물>   서버가 게임을 시작해 준다
+//   ?embed=1&local=3&game=<게임 id>&name=<이름>                                  혼자일 때: 시험용 봇과 한 판
+const IS_EMBED = query.has('embed');
 const LOCAL_PLAYERS = Number(query.get('local')) || 3;
 const NAME_KEY = 'party.name';
 
@@ -273,6 +277,7 @@ async function startGame(s, d) {
   }
   if (activeRun !== d.run) return; // 불러오는 사이에 판이 끝났거나 바뀌었다
   destroyGame();
+  $('game-root').innerHTML = '';   // 안내 문구(보드 내장 모드의 '준비하는 중…')가 남아 있으면 지운다
   show('game');
   $('game-help').textContent = `${def.title} — ${def.howTo}`;
   // 버튼에 남은 포커스가 게임 키 입력을 가로채지 않게 한다
@@ -294,10 +299,70 @@ function endGame(d) {
   activeRun = 0;
   lastEnd = d;
   destroyGame();
+  if (IS_EMBED) return embedEnd(d);
   renderResults(lastEnd);
   show('lobby');
   if (session && session.room) renderLobby(session.room);
 }
 
-show('join');
-$('name').focus();
+// ---------------------------------------------------------------
+// 보드게임 안에서 열렸을 때 (embed)
+// ---------------------------------------------------------------
+function embedMessage(text) {
+  show('game');
+  $('game-root').innerHTML = `<div class="embed-wait">${escapeHtml(text)}</div>`;
+}
+
+/** 미니게임이 끝났다 → 보드 화면(부모 창)에 알린다. 점수 판정은 서버가 이미 보드 쪽으로 넘겼다. */
+function embedEnd(d) {
+  embedMessage(d.aborted ? '게임이 중단되었습니다.' : '결과를 보드로 보내는 중…');
+  const meId = session && session.me ? session.me.id : null;
+  const mine = (d.results || []).find((r) => r.playerId === meId);
+  try {
+    window.parent.postMessage({ type: 'RE_PARTY_END', gameId: d.gameId, results: d.results || [], aborted: !!d.aborted }, '*');
+    // 혼자 한 판(시험용 봇)은 서버가 결과를 모르므로, 보드 화면이 원래 쓰던 형식으로 내 점수를 넘긴다
+    if (IS_LOCAL) {
+      window.parent.postMessage({
+        type: 'RE_MINIGAME_RESULT',
+        result: { gameId: d.gameId, ranking: [{ cpu: false, score: mine ? mine.score : 0, rank: mine ? mine.rank : 1 }] },
+      }, '*');
+    }
+  } catch (err) { /* 부모 창이 없으면 무시 */ }
+}
+
+async function startEmbedded() {
+  document.body.classList.add('embed');
+  $('banner-local').hidden = true;
+  embedMessage('미니게임을 준비하는 중…');
+  const name = (query.get('name') || '').slice(0, 8);
+  let s;
+  if (IS_LOCAL) {
+    s = new LocalSession({ players: LOCAL_PLAYERS });
+  } else {
+    const ws = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws?room=${encodeURIComponent(query.get('room') || '')}`;
+    s = new RemoteSession({ url: ws, hello: { tag: query.get('tag') || '', character: query.get('character') || '' } });
+  }
+  bind(s);
+  try {
+    await s.connect(name);
+    session = s;
+    if (IS_LOCAL) {
+      const gameId = query.get('game');
+      if (!GAMES[gameId]) return embedMessage('이 화면에는 그 게임이 없습니다.');
+      s.selectGame(gameId);
+      await s.startGame();
+    } else if (!handle) {
+      embedMessage('다른 참가자를 기다리는 중…');
+    }
+  } catch (err) {
+    s.close();
+    embedMessage(err && err.message ? err.message : '미니게임 서버에 연결하지 못했습니다.');
+  }
+}
+
+if (IS_EMBED) {
+  startEmbedded();
+} else {
+  show('join');
+  $('name').focus();
+}
