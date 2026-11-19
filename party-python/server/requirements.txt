@@ -1,0 +1,10 @@
+# 미니게임 파티 서버 의존성
+# 설치(server 폴더에서):  python -m pip install -r requirements.txt
+# 버전은 '소리 따라하기' 프로젝트에서 이미 쓰던 것과 같게 맞췄다(같은 가상환경을 함께 쓸 수 있게).
+fastapi==0.162.0
+uvicorn==0.54.0
+websockets            # uvicorn 이 WebSocket 을 처리할 때 필요
+numpy                 # 소리 따라하기 채점(소리 비교 계산)에 필요
+
+# 테스트
+pytest==9.2.0

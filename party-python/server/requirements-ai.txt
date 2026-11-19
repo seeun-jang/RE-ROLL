@@ -1,0 +1,17 @@
+# 음성 인식(Whisper)용 추가 패키지 — 음성 퀴즈 등 "말로 하는" 게임에서 쓴다.
+# 설치하지 않아도 서버는 켜진다(그때는 음성 없이 타자 입력으로만 답한다).
+#
+# 설치 순서 (server 폴더에서, Windows PowerShell)
+#   1) PyTorch — 그래픽카드(RTX 3080)를 쓰려면 CUDA 용으로 먼저 설치한다:
+#        python -m pip install torch --index-url https://download.pytorch.org/whl/cu126
+#      (안 되면 https://pytorch.org/get-started/locally/ 에서 Windows / Pip / CUDA 를 고르면 나오는 명령을 쓴다.
+#       그래픽카드 없이 쓰려면:  python -m pip install torch --index-url https://download.pytorch.org/whl/cpu )
+#   2) 나머지:
+#        python -m pip install -r requirements-ai.txt
+#   3) 확인:
+#        python tools\check_ai.py
+#
+# 버전을 적지 않은 이유: 이 파일을 만든 환경에서는 설치·실행을 확인하지 못했다.
+# 설치가 잘 되면 `python -m pip freeze` 에 나온 버전(torch, transformers, numpy)을 여기에 적어 고정한다.
+transformers
+numpy

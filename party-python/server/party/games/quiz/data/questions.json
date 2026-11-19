@@ -1,0 +1,1598 @@
+{
+ "version": 1,
+ "categories": [
+  {
+   "id": "history",
+   "name": "역사",
+   "icon": "scroll"
+  },
+  {
+   "id": "society",
+   "name": "사회",
+   "icon": "scale"
+  },
+  {
+   "id": "science",
+   "name": "과학",
+   "icon": "flask"
+  },
+  {
+   "id": "geography",
+   "name": "지리",
+   "icon": "globe"
+  },
+  {
+   "id": "culture",
+   "name": "문화·상식",
+   "icon": "note"
+  }
+ ],
+ "questions": [
+  {
+   "id": "history-001",
+   "category": "history",
+   "question": "훈민정음을 만들어 백성에게 널리 알린 조선의 왕은?",
+   "answer": "세종대왕",
+   "aliases": [
+    "세종"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-002",
+   "category": "history",
+   "question": "임진왜란 때 거북선을 이끌고 한산도대첩에서 승리한 장군은?",
+   "answer": "이순신",
+   "aliases": [
+    "이순신장군",
+    "충무공"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-003",
+   "category": "history",
+   "question": "고려를 세우고 후삼국을 통일한 인물은?",
+   "answer": "왕건",
+   "aliases": [
+    "태조왕건",
+    "고려태조",
+    "고려태조왕건"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-004",
+   "category": "history",
+   "question": "위화도 회군 이후 새 왕조인 조선을 세운 인물은?",
+   "answer": "이성계",
+   "aliases": [
+    "태조이성계",
+    "조선태조"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-005",
+   "category": "history",
+   "question": "우리 역사에서 가장 먼저 세워진 나라로 알려진 국가는?",
+   "answer": "고조선",
+   "aliases": [
+    "단군조선"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-006",
+   "category": "history",
+   "question": "환웅과 웅녀 사이에서 태어나 나라를 세웠다고 전해지는 인물은?",
+   "answer": "단군왕검",
+   "aliases": [
+    "단군"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-007",
+   "category": "history",
+   "question": "광개토대왕과 장수왕은 어느 나라의 왕이었을까?",
+   "answer": "고구려",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "history-008",
+   "category": "history",
+   "question": "1919년 전국에서 태극기를 들고 대한독립 만세를 외친 민족 운동은?",
+   "answer": "삼일운동",
+   "aliases": [
+    "기미독립운동",
+    "삼일만세운동",
+    "기미만세운동",
+    "31운동",
+    "31만세운동",
+    "31독립운동"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-009",
+   "category": "history",
+   "question": "경주에 있는 신라 시대의 돌로 쌓은 천문 관측대는?",
+   "answer": "첨성대",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "history-010",
+   "category": "history",
+   "question": "경주 토함산에 있으며 본존불상을 모신 신라의 인공 동굴 사원은?",
+   "answer": "석굴암",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "history-011",
+   "category": "history",
+   "question": "현존하는 세계에서 가장 오래된 금속활자본인 고려의 책은?",
+   "answer": "직지심체요절",
+   "aliases": [
+    "직지",
+    "직지심경"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "history-012",
+   "category": "history",
+   "question": "합천 해인사에 보관된, 고려 때 불경을 새긴 목판은?",
+   "answer": "팔만대장경",
+   "aliases": [
+    "고려대장경",
+    "재조대장경"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-013",
+   "category": "history",
+   "question": "조선의 으뜸 궁궐로 광화문이 정문인 서울의 궁궐은?",
+   "answer": "경복궁",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "history-014",
+   "category": "history",
+   "question": "정조가 거중기를 활용해 쌓은 경기도의 세계유산 성곽은?",
+   "answer": "수원화성",
+   "aliases": [
+    "화성"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "history-015",
+   "category": "history",
+   "question": "목민심서를 쓴 조선 후기의 실학자는?",
+   "answer": "정약용",
+   "aliases": [
+    "다산",
+    "다산정약용"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "history-016",
+   "category": "history",
+   "question": "세종 때 스스로 시간을 알리는 물시계 자격루를 만든 과학자는?",
+   "answer": "장영실",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "history-017",
+   "category": "history",
+   "question": "1909년 하얼빈역에서 이토 히로부미를 저격한 독립운동가는?",
+   "answer": "안중근",
+   "aliases": [
+    "안중근의사"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-018",
+   "category": "history",
+   "question": "1932년 상하이 훙커우 공원에서 폭탄을 던진 독립운동가는?",
+   "answer": "윤봉길",
+   "aliases": [
+    "윤봉길의사"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-019",
+   "category": "history",
+   "question": "아우내 장터에서 만세 운동을 이끈 이화학당 학생 독립운동가는?",
+   "answer": "유관순",
+   "aliases": [
+    "유관순열사"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-020",
+   "category": "history",
+   "question": "『나의 소원』을 쓰고 대한민국 임시정부 주석을 지낸 독립운동가는?",
+   "answer": "김구",
+   "aliases": [
+    "백범김구",
+    "백범",
+    "김구선생"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-021",
+   "category": "history",
+   "question": "알에서 태어났다고 전해지는 고구려의 시조는?",
+   "answer": "주몽",
+   "aliases": [
+    "동명성왕",
+    "고주몽",
+    "동명왕"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "history-022",
+   "category": "history",
+   "question": "황산벌에서 오천 결사대를 이끌고 싸운 백제의 장군은?",
+   "answer": "계백",
+   "aliases": [
+    "계백장군"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "history-023",
+   "category": "history",
+   "question": "살수대첩에서 수나라 대군을 물리친 고구려의 장군은?",
+   "answer": "을지문덕",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "history-024",
+   "category": "history",
+   "question": "고려 때 귀주대첩에서 거란군을 크게 물리친 장군은?",
+   "answer": "강감찬",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "history-025",
+   "category": "history",
+   "question": "완도에 청해진을 설치하고 해상 무역을 이끈 신라 인물은?",
+   "answer": "장보고",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "history-026",
+   "category": "history",
+   "question": "고려 말 원나라에서 목화씨를 들여온 인물은?",
+   "answer": "문익점",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "history-027",
+   "category": "history",
+   "question": "조선 후기에 대동여지도를 만든 지리학자는?",
+   "answer": "김정호",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "history-028",
+   "category": "history",
+   "question": "태조부터 철종까지 왕들의 일을 날짜순으로 기록한 역사책은?",
+   "answer": "조선왕조실록",
+   "aliases": [
+    "왕조실록"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "history-029",
+   "category": "history",
+   "question": "비취색으로 유명한 고려 시대의 대표 도자기는?",
+   "answer": "청자",
+   "aliases": [
+    "고려청자"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-030",
+   "category": "history",
+   "question": "백제의 마지막 왕은 누구일까?",
+   "answer": "의자왕",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "history-031",
+   "category": "history",
+   "question": "고대 이집트 왕의 무덤으로 쓰인 거대한 사각뿔 모양 건축물은?",
+   "answer": "피라미드",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "history-032",
+   "category": "history",
+   "question": "중국을 처음으로 통일하고 병마용으로 유명한 황제는?",
+   "answer": "진시황",
+   "aliases": [
+    "진시황제",
+    "시황제"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-033",
+   "category": "history",
+   "question": "프랑스 황제가 되어 유럽을 휩쓸었지만 워털루 전투에서 패한 인물은?",
+   "answer": "나폴레옹",
+   "aliases": [
+    "나폴레옹보나파르트"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "history-034",
+   "category": "history",
+   "question": "1492년 대서양을 건너 아메리카 대륙에 도착한 탐험가는?",
+   "answer": "콜럼버스",
+   "aliases": [
+    "콜롬버스",
+    "크리스토퍼콜럼버스"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "society-001",
+   "category": "society",
+   "question": "국민이 뽑은 대표들이 모여 법률을 만드는 국가 기관은?",
+   "answer": "국회",
+   "aliases": [
+    "입법부",
+    "의회"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "society-002",
+   "category": "society",
+   "question": "재판을 통해 법을 적용하고 분쟁을 해결하는 국가 기관은?",
+   "answer": "법원",
+   "aliases": [
+    "사법부"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "society-003",
+   "category": "society",
+   "question": "입법·행정·사법을 서로 다른 기관이 맡아 견제하게 하는 원리는?",
+   "answer": "삼권분립",
+   "aliases": [
+    "권력분립"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "society-004",
+   "category": "society",
+   "question": "한 나라의 최고 법으로, 다른 모든 법의 기준이 되는 법은?",
+   "answer": "헌법",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "society-005",
+   "category": "society",
+   "question": "물가가 전반적으로 계속 오르는 현상을 무엇이라 할까?",
+   "answer": "인플레이션",
+   "aliases": [
+    "인플레",
+    "물가상승"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "society-006",
+   "category": "society",
+   "question": "물가가 전반적으로 계속 떨어지는 현상을 무엇이라 할까?",
+   "answer": "디플레이션",
+   "aliases": [
+    "디플레",
+    "물가하락"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "society-007",
+   "category": "society",
+   "question": "물건을 사려는 사람과 팔려는 사람이 만나 거래가 이루어지는 곳은?",
+   "answer": "시장",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "society-008",
+   "category": "society",
+   "question": "국민이 나라의 주인이 되어 스스로 다스리는 정치 이념은?",
+   "answer": "민주주의",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "society-009",
+   "category": "society",
+   "question": "누구나 한 사람이 한 표씩, 같은 가치의 표를 갖는다는 선거 원칙은?",
+   "answer": "평등선거",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "society-010",
+   "category": "society",
+   "question": "누구에게 투표했는지 다른 사람이 알 수 없게 하는 선거 원칙은?",
+   "answer": "비밀선거",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "society-011",
+   "category": "society",
+   "question": "국가나 지방자치단체가 살림에 쓰려고 국민에게 거두는 돈은?",
+   "answer": "세금",
+   "aliases": [
+    "조세"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "society-012",
+   "category": "society",
+   "question": "은행에 돈을 맡기거나 빌릴 때 원금에 더해 주고받는 돈은?",
+   "answer": "이자",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "society-013",
+   "category": "society",
+   "question": "어떤 행위가 범죄이고 어떤 벌을 받는지 정해 놓은 법은?",
+   "answer": "형법",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "society-014",
+   "category": "society",
+   "question": "개인 사이의 재산, 계약, 가족 관계 등을 다루는 법은?",
+   "answer": "민법",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "society-015",
+   "category": "society",
+   "question": "재판에서 피고인이나 의뢰인의 편에서 법률적으로 돕는 전문가는?",
+   "answer": "변호사",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "society-016",
+   "category": "society",
+   "question": "범죄를 수사하고 피의자를 재판에 넘기는 일을 하는 법조인은?",
+   "answer": "검사",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "society-017",
+   "category": "society",
+   "question": "법정에서 재판을 진행하고 판결을 내리는 사람은?",
+   "answer": "판사",
+   "aliases": [
+    "법관"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "society-018",
+   "category": "society",
+   "question": "한 사건에 대해 원칙적으로 세 번까지 재판받을 수 있는 제도는?",
+   "answer": "삼심제",
+   "aliases": [
+    "삼심제도",
+    "3심제",
+    "3심제도"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "society-019",
+   "category": "society",
+   "question": "헌법을 바꿀 때처럼 중요한 일에 유권자 모두가 직접 찬반을 표시하는 제도는?",
+   "answer": "국민투표",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "society-020",
+   "category": "society",
+   "question": "여러 선택지 중 하나를 고를 때 포기한 것 중 가장 큰 가치는?",
+   "answer": "기회비용",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "society-021",
+   "category": "society",
+   "question": "우리나라에서 행정부의 최고 책임자이자 국가 원수인 사람은?",
+   "answer": "대통령",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "society-022",
+   "category": "society",
+   "question": "한 나라 안에서 일정 기간 만들어진 최종 재화와 서비스의 가치를 합한 것은?",
+   "answer": "국내총생산",
+   "aliases": [
+    "지디피",
+    "gdp",
+    "국내총생산액"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "society-023",
+   "category": "society",
+   "question": "일할 능력과 의사가 있는데도 일자리를 얻지 못한 상태는?",
+   "answer": "실업",
+   "aliases": [
+    "실업상태"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "society-024",
+   "category": "society",
+   "question": "의견이 갈릴 때 더 많은 사람이 찬성한 쪽으로 결정하는 방법은?",
+   "answer": "다수결",
+   "aliases": [
+    "다수결원칙",
+    "다수결원리"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "society-025",
+   "category": "society",
+   "question": "지역 주민이 대표를 뽑아 그 지역의 일을 스스로 처리하는 제도는?",
+   "answer": "지방자치",
+   "aliases": [
+    "지방자치제",
+    "지방자치제도"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "society-026",
+   "category": "society",
+   "question": "근로자들이 근로 조건을 개선하려고 스스로 만든 단체는?",
+   "answer": "노동조합",
+   "aliases": [
+    "노조"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "society-027",
+   "category": "society",
+   "question": "우리나라 돈과 다른 나라 돈을 바꿀 때의 교환 비율은?",
+   "answer": "환율",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "society-028",
+   "category": "society",
+   "question": "외국에서 수입되는 물건에 국가가 매기는 세금은?",
+   "answer": "관세",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "society-029",
+   "category": "society",
+   "question": "우리나라에서 화폐를 발행하고 기준금리를 정하는 중앙 기관은?",
+   "answer": "한국은행",
+   "aliases": [
+    "한은"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "society-030",
+   "category": "society",
+   "question": "일정한 가격에 물건을 사려는 욕구로, 보통 가격이 오르면 줄어드는 것은?",
+   "answer": "수요",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "society-031",
+   "category": "society",
+   "question": "국가의 3요소는 국민, 영토, 그리고 무엇일까?",
+   "answer": "주권",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "society-032",
+   "category": "society",
+   "question": "나이가 들어 일을 그만둔 뒤 매달 받도록 미리 준비하는 돈은?",
+   "answer": "연금",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "society-033",
+   "category": "society",
+   "question": "수사기관이 사람을 체포하거나 압수수색할 때 법관이 발부하는 문서는?",
+   "answer": "영장",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "society-034",
+   "category": "society",
+   "question": "유죄 판결이 확정되기 전까지는 죄가 없는 사람으로 본다는 원칙은?",
+   "answer": "무죄추정",
+   "aliases": [
+    "무죄추정원칙",
+    "무죄추정의원칙"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "science-001",
+   "category": "science",
+   "question": "떨어지는 사과를 보고 만유인력을 떠올렸다고 알려진 영국 과학자는?",
+   "answer": "뉴턴",
+   "aliases": [
+    "뉴튼",
+    "아이작뉴턴",
+    "아이작뉴튼"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "science-002",
+   "category": "science",
+   "question": "백열전구를 실용화하고 '발명왕'으로 불린 미국 발명가는?",
+   "answer": "에디슨",
+   "aliases": [
+    "토머스에디슨",
+    "토마스에디슨"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "science-003",
+   "category": "science",
+   "question": "가장 가벼운 원소로, 산소와 함께 물을 이루는 원소는?",
+   "answer": "수소",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-004",
+   "category": "science",
+   "question": "태양계에서 태양과 가장 가까운 행성은?",
+   "answer": "수성",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-005",
+   "category": "science",
+   "question": "태양계 행성 가운데 크기가 가장 큰 행성은?",
+   "answer": "목성",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-006",
+   "category": "science",
+   "question": "크고 뚜렷한 고리로 유명한 태양계의 여섯 번째 행성은?",
+   "answer": "토성",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-007",
+   "category": "science",
+   "question": "식물이 햇빛을 이용해 이산화탄소와 물로 양분을 만드는 작용은?",
+   "answer": "광합성",
+   "aliases": [
+    "광합성작용"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "science-008",
+   "category": "science",
+   "question": "식물 세포에서 광합성이 일어나는 초록색 세포 소기관은?",
+   "answer": "엽록체",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "science-009",
+   "category": "science",
+   "question": "우리 몸에서 혈액을 온몸으로 내보내는 펌프 역할을 하는 기관은?",
+   "answer": "심장",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-010",
+   "category": "science",
+   "question": "옷장 속 나프탈렌이 작아지는 것처럼 고체가 액체를 거치지 않고 바로 기체로 변하는 현상은?",
+   "answer": "승화",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "science-011",
+   "category": "science",
+   "question": "상대성 이론을 발표한 독일 태생의 물리학자는?",
+   "answer": "아인슈타인",
+   "aliases": [
+    "알베르트아인슈타인"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "science-012",
+   "category": "science",
+   "question": "진화론을 담은 책 『종의 기원』을 쓴 영국 과학자는?",
+   "answer": "다윈",
+   "aliases": [
+    "찰스다윈"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "science-013",
+   "category": "science",
+   "question": "방사능 연구로 노벨상을 두 번 받은 폴란드 출신 여성 과학자는?",
+   "answer": "퀴리부인",
+   "aliases": [
+    "마리퀴리",
+    "퀴리",
+    "마리아퀴리",
+    "퀴리여사"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "science-014",
+   "category": "science",
+   "question": "지구가 스스로 하루에 한 바퀴씩 도는 운동은?",
+   "answer": "자전",
+   "aliases": [
+    "지구자전"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "science-015",
+   "category": "science",
+   "question": "지구가 태양 주위를 1년에 한 바퀴씩 도는 운동은?",
+   "answer": "공전",
+   "aliases": [
+    "지구공전"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "science-016",
+   "category": "science",
+   "question": "공기 중에 가장 많이 들어 있는 기체는?",
+   "answer": "질소",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "science-017",
+   "category": "science",
+   "question": "우리가 숨 쉴 때 꼭 필요하고 물질이 타는 것을 돕는 기체는?",
+   "answer": "산소",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-018",
+   "category": "science",
+   "question": "드라이아이스는 어떤 기체를 차갑게 얼려 고체로 만든 것일까?",
+   "answer": "이산화탄소",
+   "aliases": [
+    "탄산가스"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "science-019",
+   "category": "science",
+   "question": "햇빛을 무지개처럼 여러 색으로 나누는 삼각기둥 모양의 유리는?",
+   "answer": "프리즘",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-020",
+   "category": "science",
+   "question": "땅속 깊은 곳에서 암석이 녹아 액체 상태로 있는 물질은?",
+   "answer": "마그마",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "science-021",
+   "category": "science",
+   "question": "화산이 폭발할 때 땅 위로 흘러나온 마그마를 부르는 말은?",
+   "answer": "용암",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-022",
+   "category": "science",
+   "question": "혈액 속에서 산소를 운반하는 붉은색 세포는?",
+   "answer": "적혈구",
+   "aliases": [
+    "붉은피톨"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "science-023",
+   "category": "science",
+   "question": "혈액 속에서 몸에 들어온 세균과 싸워 몸을 지키는 세포는?",
+   "answer": "백혈구",
+   "aliases": [
+    "흰피톨"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "science-024",
+   "category": "science",
+   "question": "개구리처럼 어릴 때는 아가미로, 커서는 폐와 피부로 호흡하는 동물 무리는?",
+   "answer": "양서류",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "science-025",
+   "category": "science",
+   "question": "고래와 박쥐처럼 새끼를 낳아 젖을 먹여 기르는 동물 무리는?",
+   "answer": "포유류",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-026",
+   "category": "science",
+   "question": "애벌레가 번데기를 거쳐 나비가 되는 것처럼 모습이 크게 바뀌는 과정은?",
+   "answer": "탈바꿈",
+   "aliases": [
+    "변태",
+    "완전탈바꿈",
+    "완전변태"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "science-027",
+   "category": "science",
+   "question": "탄소로만 이루어져 있으며 자연에서 가장 단단한 광물로 유명한 보석은?",
+   "answer": "다이아몬드",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-028",
+   "category": "science",
+   "question": "지구가 물체를 지구 중심 쪽으로 끌어당기는 힘은?",
+   "answer": "중력",
+   "aliases": [
+    "지구중력"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "science-029",
+   "category": "science",
+   "question": "북쪽 하늘에서 거의 움직이지 않아 방향을 찾는 데 쓰이는 별은?",
+   "answer": "북극성",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-030",
+   "category": "science",
+   "question": "망원경으로 목성의 위성을 발견하고 지동설을 지지한 이탈리아 과학자는?",
+   "answer": "갈릴레이",
+   "aliases": [
+    "갈릴레오",
+    "갈릴레오갈릴레이"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "science-031",
+   "category": "science",
+   "question": "다이너마이트를 발명했고, 그의 유언으로 유명한 상이 만들어진 사람은?",
+   "answer": "노벨",
+   "aliases": [
+    "알프레드노벨"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "science-032",
+   "category": "science",
+   "question": "촛농이 식어 굳는 것처럼, 액체가 고체로 변하는 현상은?",
+   "answer": "응고",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-033",
+   "category": "science",
+   "question": "표면이 붉게 보여 '붉은 행성'이라고 불리는 태양계 행성은?",
+   "answer": "화성",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "science-034",
+   "category": "science",
+   "question": "새벽 동쪽 하늘에 밝게 빛나 '샛별'이라고도 불리는 행성은?",
+   "answer": "금성",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "geography-001",
+   "category": "geography",
+   "question": "에펠탑이 있는 프랑스의 수도는?",
+   "answer": "파리",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-002",
+   "category": "geography",
+   "question": "일본의 수도는 어디일까?",
+   "answer": "도쿄",
+   "aliases": [
+    "동경"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-003",
+   "category": "geography",
+   "question": "빅벤과 버킹엄 궁전이 있는 영국의 수도는?",
+   "answer": "런던",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-004",
+   "category": "geography",
+   "question": "자금성과 천안문 광장이 있는 중국의 수도는?",
+   "answer": "베이징",
+   "aliases": [
+    "북경"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-005",
+   "category": "geography",
+   "question": "백악관이 있는 미국의 수도는?",
+   "answer": "워싱턴",
+   "aliases": [
+    "워싱턴디시",
+    "워싱턴디씨"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-006",
+   "category": "geography",
+   "question": "호주의 수도는 어디일까? (시드니가 아니다!)",
+   "answer": "캔버라",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "geography-007",
+   "category": "geography",
+   "question": "피라미드로 유명한 이집트의 수도는?",
+   "answer": "카이로",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "geography-008",
+   "category": "geography",
+   "question": "붉은 광장과 크렘린이 있는 러시아의 수도는?",
+   "answer": "모스크바",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-009",
+   "category": "geography",
+   "question": "브란덴부르크 문이 있는 독일의 수도는?",
+   "answer": "베를린",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-010",
+   "category": "geography",
+   "question": "남한에서 가장 높은 산은?",
+   "answer": "한라산",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-011",
+   "category": "geography",
+   "question": "한반도에서 가장 높은 산은?",
+   "answer": "백두산",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-012",
+   "category": "geography",
+   "question": "히말라야산맥에 있는 세계에서 가장 높은 산은?",
+   "answer": "에베레스트",
+   "aliases": [
+    "에베레스트산"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-013",
+   "category": "geography",
+   "question": "세계에서 가장 넓은 바다(대양)는?",
+   "answer": "태평양",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-014",
+   "category": "geography",
+   "question": "아프리카 북부에 펼쳐진 세계 최대의 열대 사막은?",
+   "answer": "사하라사막",
+   "aliases": [
+    "사하라"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-015",
+   "category": "geography",
+   "question": "세계에서 면적이 가장 넓은 나라는?",
+   "answer": "러시아",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-016",
+   "category": "geography",
+   "question": "세계에서 가장 넓은 대륙은?",
+   "answer": "아시아",
+   "aliases": [
+    "아시아대륙"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-017",
+   "category": "geography",
+   "question": "지구 가장 남쪽에 있으며 대부분 두꺼운 얼음으로 덮인 대륙은?",
+   "answer": "남극대륙",
+   "aliases": [
+    "남극"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-018",
+   "category": "geography",
+   "question": "서울 한가운데를 가로질러 흐르는 강은?",
+   "answer": "한강",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-019",
+   "category": "geography",
+   "question": "독도에서 가장 가까운 우리나라의 큰 섬은?",
+   "answer": "울릉도",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "geography-020",
+   "category": "geography",
+   "question": "우리나라에서 가장 큰 섬은?",
+   "answer": "제주도",
+   "aliases": [
+    "제주"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-021",
+   "category": "geography",
+   "question": "한반도의 동쪽에 있는 바다 이름은?",
+   "answer": "동해",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-022",
+   "category": "geography",
+   "question": "부산 앞바다로 흘러드는 남한에서 가장 긴 강은?",
+   "answer": "낙동강",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "geography-023",
+   "category": "geography",
+   "question": "불국사와 석굴암이 있는 경주는 어느 도에 속할까?",
+   "answer": "경상북도",
+   "aliases": [
+    "경북"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "geography-024",
+   "category": "geography",
+   "question": "자유의 여신상이 있는 미국의 도시는?",
+   "answer": "뉴욕",
+   "aliases": [
+    "뉴욕시"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-025",
+   "category": "geography",
+   "question": "캥거루와 코알라로 유명한 오세아니아에서 가장 큰 나라는?",
+   "answer": "호주",
+   "aliases": [
+    "오스트레일리아"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-026",
+   "category": "geography",
+   "question": "위도 0도로, 지구를 북반구와 남반구로 나누는 선은?",
+   "answer": "적도",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-027",
+   "category": "geography",
+   "question": "세계 최대의 열대우림을 흐르는 남아메리카의 큰 강은?",
+   "answer": "아마존강",
+   "aliases": [
+    "아마존"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-028",
+   "category": "geography",
+   "question": "지도에서 보면 장화처럼 생긴 유럽의 나라는?",
+   "answer": "이탈리아",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-029",
+   "category": "geography",
+   "question": "유럽 남쪽과 아프리카 북쪽 사이에 있는 바다는?",
+   "answer": "지중해",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "geography-030",
+   "category": "geography",
+   "question": "백두산 꼭대기에 있는 커다란 호수의 이름은?",
+   "answer": "천지",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-031",
+   "category": "geography",
+   "question": "갯벌이 넓게 발달한 한반도 서쪽의 바다는?",
+   "answer": "서해",
+   "aliases": [
+    "황해"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-032",
+   "category": "geography",
+   "question": "이탈리아 로마 안에 있는 세계에서 가장 작은 나라는?",
+   "answer": "바티칸",
+   "aliases": [
+    "바티칸시국",
+    "바티칸시티"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "geography-033",
+   "category": "geography",
+   "question": "일본에서 가장 높은 산은?",
+   "answer": "후지산",
+   "aliases": [
+    "후지야마"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "geography-034",
+   "category": "geography",
+   "question": "남아메리카 서쪽을 따라 길게 뻗은 세계에서 가장 긴 산맥은?",
+   "answer": "안데스산맥",
+   "aliases": [
+    "안데스"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "culture-001",
+   "category": "culture",
+   "question": "'우물 안 ○○○'는 세상 물정을 모르는 사람을 뜻한다. 빈칸에 들어갈 동물은?",
+   "answer": "개구리",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-002",
+   "category": "culture",
+   "question": "'고래 싸움에 ○○ 등 터진다' 빈칸에 들어갈 동물은?",
+   "answer": "새우",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-003",
+   "category": "culture",
+   "question": "'소 잃고 ○○○ 고친다' 빈칸에 들어갈 말은?",
+   "answer": "외양간",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-004",
+   "category": "culture",
+   "question": "'빛 좋은 ○○○'는 겉만 그럴듯하고 실속이 없음을 뜻한다. 빈칸은?",
+   "answer": "개살구",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "culture-005",
+   "category": "culture",
+   "question": "'○○○도 나무에서 떨어진다' 빈칸에 들어갈 동물은?",
+   "answer": "원숭이",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-006",
+   "category": "culture",
+   "question": "'금강산도 ○○○'은 배가 불러야 구경도 즐겁다는 뜻이다. 빈칸은?",
+   "answer": "식후경",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-007",
+   "category": "culture",
+   "question": "설날 아침에 먹으며, 먹으면 한 살 더 먹는다고 하는 음식은?",
+   "answer": "떡국",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-008",
+   "category": "culture",
+   "question": "추석에 반달 모양으로 빚어 솔잎을 깔고 쪄 먹는 떡은?",
+   "answer": "송편",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-009",
+   "category": "culture",
+   "question": "동짓날 나쁜 기운을 쫓는다며 먹는 붉은색 전통 음식은?",
+   "answer": "팥죽",
+   "aliases": [
+    "동지팥죽"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-010",
+   "category": "culture",
+   "question": "초복·중복·말복을 통틀어 이르는 말로, 삼계탕을 먹는 여름철 무더위 시기는?",
+   "answer": "삼복",
+   "aliases": [
+    "복날"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "culture-011",
+   "category": "culture",
+   "question": "토마토소스와 치즈를 얹어 화덕에 굽는 이탈리아의 둥근 음식은?",
+   "answer": "피자",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-012",
+   "category": "culture",
+   "question": "식초로 간한 밥 위에 생선회를 얹은 일본 음식은?",
+   "answer": "초밥",
+   "aliases": [
+    "스시"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-013",
+   "category": "culture",
+   "question": "밥 위에 여러 나물과 고추장을 올려 섞어 먹는 한국 음식은?",
+   "answer": "비빔밥",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-014",
+   "category": "culture",
+   "question": "중국집 대표 메뉴로, 검은 춘장 소스에 비벼 먹는 국수는?",
+   "answer": "짜장면",
+   "aliases": [
+    "자장면"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-015",
+   "category": "culture",
+   "question": "신비로운 미소의 그림 '모나리자'를 그린 이탈리아 화가는?",
+   "answer": "다빈치",
+   "aliases": [
+    "레오나르도다빈치",
+    "레오나르도"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-016",
+   "category": "culture",
+   "question": "'해바라기'와 '별이 빛나는 밤'을 그린 네덜란드 화가는?",
+   "answer": "고흐",
+   "aliases": [
+    "반고흐",
+    "빈센트반고흐"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-017",
+   "category": "culture",
+   "question": "'운명' 교향곡을 작곡했으며 귀가 들리지 않게 된 뒤에도 작곡을 계속한 음악가는?",
+   "answer": "베토벤",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-018",
+   "category": "culture",
+   "question": "오페라 '마술피리'를 작곡한 오스트리아의 천재 음악가는?",
+   "answer": "모차르트",
+   "aliases": [
+    "모짜르트"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "culture-019",
+   "category": "culture",
+   "question": "'로미오와 줄리엣'과 '햄릿'을 쓴 영국의 극작가는?",
+   "answer": "셰익스피어",
+   "aliases": [
+    "세익스피어",
+    "윌리엄셰익스피어"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-020",
+   "category": "culture",
+   "question": "제비 다리를 고쳐 주고 박에서 보물을 얻은 고전소설 속 착한 동생은?",
+   "answer": "흥부",
+   "aliases": [
+    "흥보"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-021",
+   "category": "culture",
+   "question": "심청이가 공양미 삼백 석에 팔려 몸을 던진 바다는?",
+   "answer": "인당수",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "culture-022",
+   "category": "culture",
+   "question": "최초의 한글 소설로 알려진 '홍길동전'을 지은 사람은?",
+   "answer": "허균",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "culture-023",
+   "category": "culture",
+   "question": "'어린 왕자'를 쓴 프랑스 작가는?",
+   "answer": "생텍쥐페리",
+   "aliases": [
+    "생떽쥐페리",
+    "생텍쥐뻬리"
+   ],
+   "difficulty": 2
+  },
+  {
+   "id": "culture-024",
+   "category": "culture",
+   "question": "축구에서 정해진 구역 안에서 손을 쓸 수 있는 유일한 선수는?",
+   "answer": "골키퍼",
+   "aliases": [
+    "키퍼",
+    "수문장"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-025",
+   "category": "culture",
+   "question": "야구에서 타자가 친 공이 외야 담장을 넘어가 한 번에 득점하는 타구는?",
+   "answer": "홈런",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-026",
+   "category": "culture",
+   "question": "축구에서 상대 최종 수비수보다 골문 가까이 있다가 패스를 받으면 선언되는 반칙은?",
+   "answer": "오프사이드",
+   "aliases": [],
+   "difficulty": 2
+  },
+  {
+   "id": "culture-027",
+   "category": "culture",
+   "question": "축구에서 한 선수가 한 경기에 세 골을 넣는 것을 무엇이라 하나?",
+   "answer": "해트트릭",
+   "aliases": [
+    "햇트릭"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-028",
+   "category": "culture",
+   "question": "42.195킬로미터를 달리는 육상 경기는?",
+   "answer": "마라톤",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-029",
+   "category": "culture",
+   "question": "모래판에서 샅바를 잡고 상대를 넘어뜨리는 우리 전통 운동은?",
+   "answer": "씨름",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-030",
+   "category": "culture",
+   "question": "흰 건반과 검은 건반을 누르면 해머가 줄을 때려 소리 나는 악기는?",
+   "answer": "피아노",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-031",
+   "category": "culture",
+   "question": "꽹과리, 징, 장구, 북 네 가지 악기로 연주하는 우리 전통 음악은?",
+   "answer": "사물놀이",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-032",
+   "category": "culture",
+   "question": "명절이나 전통 혼례 때 입는 우리나라 고유의 옷은?",
+   "answer": "한복",
+   "aliases": [],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-033",
+   "category": "culture",
+   "question": "백설공주가 변장한 왕비에게 받아 한 입 먹고 쓰러진 과일은?",
+   "answer": "사과",
+   "aliases": [
+    "독사과"
+   ],
+   "difficulty": 1
+  },
+  {
+   "id": "culture-034",
+   "category": "culture",
+   "question": "신데렐라가 무도회장에서 급히 나오다 계단에 떨어뜨린 신발은?",
+   "answer": "유리구두",
+   "aliases": [],
+   "difficulty": 1
+  }
+ ]
+}

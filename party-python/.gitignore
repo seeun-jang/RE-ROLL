@@ -1,0 +1,9 @@
+﻿# 자동으로 만들어지는 것 · 용량 큰 것 (설치 · 빌드하면 다시 생김)
+node_modules/
+.venv/
+__pycache__/
+.pytest_cache/
+web/dist/
+web/public/mediapipe/
+# API 키는 파일로 올리지 않는다
+.env

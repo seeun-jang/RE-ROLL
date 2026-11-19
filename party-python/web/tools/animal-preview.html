@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>동물 캐릭터 미리보기 (줄다리기)</title>
+<style>
+  body { margin: 0; padding: 16px; background: #38b764; color: #1a1c2c; font: 14px monospace; }
+  canvas { image-rendering: pixelated; display: block; }
+  h3 { margin: 12px 0 4px; }
+</style>
+</head>
+<body>
+<p>동물 5종 × 모든 동작 프레임 (3배 확대). 왼쪽 팀 기준, 맨 오른쪽 열은 오른쪽 팀(좌우 반전).</p>
+<div id="out"></div>
+<script type="module">
+import { Assets } from '../src/games/tug/assets/AssetLoader.js';
+import { CHARACTER_FRAMES, CHARACTER_ANIMS } from '../src/games/tug/assets/sprites.js';
+import { ANIMALS, ANIMAL_ORDER } from '../src/shared/animals.js';
+
+const SCALE = 3;
+const assets = new Assets({});
+const out = document.getElementById('out');
+const frames = [];
+for (const anim of CHARACTER_ANIMS) for (let f = 0; f < CHARACTER_FRAMES[anim].length; f++) frames.push([anim, f]);
+for (const id of ANIMAL_ORDER) {
+  const h = document.createElement('h3');
+  h.textContent = `${ANIMALS[id].name} — ` + frames.map(([a, f]) => `${a}${f}`).join(' ');
+  out.appendChild(h);
+  const cv = document.createElement('canvas');
+  cv.width = (frames.length + 1) * 42 * SCALE;
+  cv.height = 42 * SCALE;
+  const g = cv.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  frames.forEach(([a, f], i) => {
+    const img = assets.character({ animal: id }, 'left', a, f);
+    g.drawImage(img, (i * 42 + 21) * SCALE - (img.width >> 1) * SCALE, (40 - img.height) * SCALE, img.width * SCALE, img.height * SCALE);
+  });
+  const flipped = assets.character({ animal: id }, 'right', 'idle', 0, true);
+  g.drawImage(flipped, (frames.length * 42 + 21) * SCALE - (flipped.width >> 1) * SCALE, (40 - flipped.height) * SCALE, flipped.width * SCALE, flipped.height * SCALE);
+  out.appendChild(cv);
+}
+</script>
+</body>
+</html>
