@@ -6,6 +6,7 @@
 // =====================================================
 import { DICE, SPACES, CHARACTERS, TURN_CHOICES, MAX_PLAYERS } from './shared/rules.js';
 import { BoardView, spriteUrl } from './board-view.js';
+import { playIntro, animate, drawGoodEnding, drawBadEnding } from './story.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -15,33 +16,35 @@ const NAME_KEY = 'reroll.playerName'; // 미니게임들과 같은 이름 저장
 const stage = $('stage');
 const board = new BoardView($('board'), $('minimap'));
 $('btn-map').onclick = (e) => { e.currentTarget.blur(); board.toggleOverview(); };
+// ---------------- 열쇠 그림 배경 (원본 화질 그대로) ----------------
+// 화면에 실제로 보이는 크기(픽셀)만큼의 캔버스에 그린다 → 확대해서 뭉개지는 일이 없다.
+// 왼쪽 위 로고가 잘리지 않게 왼쪽 위 기준으로 자른다.
+const keyart = $('keyart');
+const keyartImg = new Image();
+function drawKeyart(scale) {
+  if (!keyartImg.naturalWidth) return;
+  const ratio = scale * (window.devicePixelRatio || 1);
+  // 원본보다 크게 그려 봐야 더 선명해지지 않으므로 원본 크기까지만
+  const cover = Math.max(960 / keyartImg.naturalWidth, 600 / keyartImg.naturalHeight);
+  const r = Math.min(ratio, 1 / cover);
+  const w = Math.max(1, Math.round(960 * r)), h = Math.max(1, Math.round(600 * r));
+  if (keyart.width !== w || keyart.height !== h) { keyart.width = w; keyart.height = h; }
+  const g = keyart.getContext('2d');
+  g.imageSmoothingEnabled = true;
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(keyartImg, 0, 0, keyartImg.naturalWidth * cover * r, keyartImg.naturalHeight * cover * r);
+}
+
 function fit() {
   const s = Math.min(innerWidth / 960, innerHeight / 600);
   stage.style.transform = `translate(-50%, -50%) scale(${s})`;
   board.setScale(s);
+  drawKeyart(s);
 }
 addEventListener('resize', fit);
 fit();
-
-// ---------------- 열쇠 그림 배경 (픽셀로) ----------------
-// 낮은 해상도 캔버스에 그린 뒤 확대 → 도트 느낌. 왼쪽 위 로고가 잘리지 않게 왼쪽 기준으로 자름
-const keyart = $('keyart');
-{
-  const img = new Image();
-  img.onload = () => {
-    const w = 400, h = 250;
-    keyart.width = w; keyart.height = h;
-    const g = keyart.getContext('2d');
-    const s = Math.max(w / img.width, h / img.height);
-    g.imageSmoothingEnabled = true;
-    g.drawImage(img, 0, 0, img.width * s, img.height * s);
-    // 색 단계를 줄여서 더 도트 그림처럼
-    const d = g.getImageData(0, 0, w, h);
-    for (let i = 0; i < d.data.length; i += 4) for (let k = 0; k < 3; k++) d.data[i + k] = Math.round(d.data[i + k] / 24) * 24;
-    g.putImageData(d, 0, 0);
-  };
-  img.src = 'assets/keyart.webp';
-}
+keyartImg.onload = fit;
+keyartImg.src = 'assets/keyart.webp';
 
 // ---------------- 연결 ----------------
 const token = (() => {
@@ -91,18 +94,47 @@ $('btn-join').onclick = () => {
   const name = needName();
   if (!name) return;
   const code = $('in-code').value.trim();
-  if (!/^\d{4}$/.test(code)) { titleMsg('방 번호 4자리를 입력해 주세요'); $('in-code').focus(); return; }
+  if (!/^\d{6}$/.test(code)) { titleMsg('팀 코드 6자리를 입력해 주세요'); $('in-code').focus(); return; }
   sendMsg({ t: 'join', name, code });
 };
 $('in-name').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) $('btn-create').click(); });
 $('in-code').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) $('btn-join').click(); });
 $('btn-leave').onclick = () => sendMsg({ t: 'leave' });
 
+// 스토리보드 1 → 2 → 3: "시작하려면 터치하세요" → 인트로(SKIP 가능) → 팀 코드 입력
+// 인트로는 이 탭에서 한 번만 본다 (대기실에서 나왔을 때 또 나오지 않게)
+const INTRO_KEY = 'reroll.party.introSeen';
+let introSeen = (() => { try { return sessionStorage.getItem(INTRO_KEY) === '1'; } catch (e) { return false; } })();
+let stopIntro = null;
+function startIntro() {
+  if (introSeen || stopIntro) return;
+  show('intro');
+  stopIntro = playIntro({
+    root: $('scr-intro'), canvas: $('intro-cv'),
+    film: $('film'), video: $('intro-video'), filmSkip: $('btn-skip-film'), loading: $('film-loading'),
+    title: $('intro-ttl'), text: $('intro-txt'), dots: $('intro-dots'), skip: $('btn-skip'),
+  }, () => {
+    stopIntro = null;
+    introSeen = true;
+    try { sessionStorage.setItem(INTRO_KEY, '1'); } catch (e) { /* 저장 안 됨 */ }
+    show('title');
+  });
+}
+$('scr-title').addEventListener('click', () => { if (!introSeen) startIntro(); });
+
+let screenName = '';
 function show(name) {
-  for (const s of ['title', 'lobby', 'game']) $(`scr-${s}`).classList.toggle('hidden', s !== name);
-  keyart.classList.toggle('hidden', name === 'game');
+  if (name !== 'intro' && stopIntro) { stopIntro(); stopIntro = null; }   // 인트로 중에 방에 다시 들어가졌으면 멈춤
+  screenName = name;
+  for (const s of ['title', 'intro', 'lobby', 'game']) $(`scr-${s}`).classList.toggle('hidden', s !== name);
+  keyart.classList.toggle('hidden', name === 'game' || name === 'intro');
   keyart.classList.toggle('dim', name === 'lobby');
-  if (name === 'title') setTimeout(() => (getName() ? $('in-code') : $('in-name')).focus(), 0);
+  if (name === 'title') {
+    $('touch').classList.toggle('hidden', introSeen);
+    $('entry').classList.toggle('hidden', !introSeen);
+    $('scr-title').classList.toggle('wait', !introSeen);
+    if (introSeen) setTimeout(() => (getName() ? $('in-code') : $('in-name')).focus(), 0);
+  }
 }
 
 // ---------------- 상태 받기 ----------------
@@ -121,6 +153,8 @@ function onRoom(r) {
   renderMinigame();
   renderPrompt();
   renderMgResult();
+  renderRank();
+  renderBoss();
   renderEnd();
 }
 
@@ -135,31 +169,57 @@ fetch('/_party/info').then((r) => r.json()).then((d) => {
 // ---------------- 대기실 ----------------
 function renderLobby() {
   $('lobby-code').textContent = room.code;
-  $('lobby-url').innerHTML = shareUrl ? `🌍 친구 접속 주소 <b>${esc(shareUrl)}</b> → 방 번호 입력` : '';
+  $('lobby-ttl').textContent = `팀 대기실 (${room.players.length}/${MAX_PLAYERS})`;
+  $('lobby-url').innerHTML = shareUrl ? `🌍 친구 접속 주소 <b>${esc(shareUrl)}</b> → 팀 코드 입력` : '';
   const seats = [];
   for (let s = 0; s < MAX_PLAYERS; s++) {
     const p = room.players.find((x) => x.seat === s);
-    const tag = p ? [p.id === room.host ? '👑 방장' : '', p.id === myId ? '나' : '', p.online ? '' : '연결 끊김'].filter(Boolean).join(' · ') : '빈 자리 → CPU';
-    seats.push(`<div class="seat ${p ? '' : 'empty'} ${p && p.id === myId ? 'me' : ''}">
-      <img src="${spriteUrl(s)}"><div class="nm">${p ? esc(p.name) : `CPU ${s + 1}`}</div><div class="tag">${tag}</div></div>`);
+    const tag = p ? [p.id === room.host ? '👑 방장' : '', p.id === myId ? '나' : '', p.online ? '' : '연결 끊김'].filter(Boolean).join(' · ') : '눌러서 고르기';
+    seats.push(`<div class="seat ${p ? '' : 'empty'} ${p && p.id === myId ? 'me' : ''}" data-seat="${s}" ${p ? '' : 'tabindex="0" role="button"'}>
+      <img src="${spriteUrl(s)}"><div class="nm">${p ? esc(p.name) : `CPU ${s + 1}`}</div>
+      ${p ? `<div class="rd ${p.ready ? 'ok' : ''}">${p.ready ? '✔ 준비 완료' : '준비 중…'}</div>` : ''}<div class="tag">${tag}</div></div>`);
   }
   $('seats').innerHTML = seats.join('');
+  // 캐릭터 고르기: 아무도 안 고른 캐릭터를 누르면 내 캐릭터가 그걸로 바뀐다
+  $('seats').querySelectorAll('.seat.empty').forEach((el) => {
+    el.onclick = () => sendMsg({ t: 'seat', seat: +el.dataset.seat });
+    el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); el.onclick(); } };
+  });
   const host = room.host === myId;
-  $('turn-pick').innerHTML = `턴 수 ${TURN_CHOICES.map((n) => `<button class="btn ${room.maxTurns === n ? 'sel' : ''}" data-n="${n}" ${host ? '' : 'disabled'}>${n}턴</button>`).join('')}`;
+  // 턴 수: 6 · 10 · 15턴 또는 무제한(0 = 누군가 결승에 도착할 때까지)
+  $('turn-pick').innerHTML = `턴 수 ${[...TURN_CHOICES, 0].map((n) => `<button class="btn ${room.maxTurns === n ? 'sel' : ''}" data-n="${n}" ${host ? '' : 'disabled'}>${n ? `${n}턴` : '무제한'}</button>`).join('')}`;
   $('turn-pick').querySelectorAll('button').forEach((b) => (b.onclick = () => sendMsg({ t: 'turns', n: +b.dataset.n })));
+  // 스토리보드 3: 전원 준비 완료 시 시작. 방장은 늘 준비된 것으로 보고, 남는 자리는 CPU 가 채운다.
+  const waiting = room.players.filter((p) => !p.ready).length;
+  const cpus = MAX_PLAYERS - room.players.length;
+  const mine = me();
   $('lobby-action').innerHTML = host
-    ? `<button id="btn-start" class="btn gold">게임 시작 (Enter) · ${room.players.length}명 + CPU ${MAX_PLAYERS - room.players.length}</button>`
-    : `<div class="hint">방장(${esc(nameOf(room.host))})이 시작하기를 기다리는 중…</div>`;
+    ? `<button id="btn-start" class="btn gold" ${waiting ? 'disabled' : ''}>${waiting
+      ? `준비를 기다리는 중… (${room.players.length - waiting}/${room.players.length})`
+      : `▶ 전원 준비 완료! 게임 시작! (Enter)${cpus ? ` · CPU ${cpus}` : ''}`}</button>`
+    : `<button id="btn-ready" class="btn ${mine?.ready ? 'dim' : 'gold'}">${mine?.ready ? '준비 취소 (Space)' : '✔ 준비 완료 (Space)'}</button>
+       <div class="hint">${waiting ? '모두 준비하면 방장이 시작해요' : `방장(${esc(nameOf(room.host))})이 시작하기를 기다리는 중…`}</div>`;
   if (host) $('btn-start').onclick = () => sendMsg({ t: 'start' });
+  else $('btn-ready').onclick = toggleReady;
 }
+function toggleReady() { sendMsg({ t: 'ready', on: !me()?.ready }); }
 
 // ---------------- 보드 HUD ----------------
-const STEP_TEXT = { choose: '주사위 고르는 중', reveal: '주사위 결과!', move: '이동 중', space: '칸 효과', minigame: '미니게임 중', mgResult: '미니게임 결과' };
+const STEP_TEXT = { choose: '주사위 고르는 중', reveal: '주사위 결과!', move: '이동 중', space: '칸 효과', minigame: '미니게임 중', mgResult: '미니게임 결과', final: '최종 결과 집계', boss: '보스전!' };
+const pts = (n) => Number(n || 0).toLocaleString('en-US');   // 1250 → 1,250
 function renderHud() {
   const m = me();
   $('hud-top').innerHTML = `<span class="chip">방 <b>${room.code}</b></span>
-    <span class="chip round">${room.phase === 'end' ? 'FINISH' : `ROUND ${room.turn}/${room.maxTurns}`}<small>${STEP_TEXT[room.step] || (room.phase === 'end' ? '게임 끝' : '')}</small></span>
-    <span class="chip">${m ? `🏁 결승까지 <b>${m.dist}</b>칸` : '관전 중'}</span>`;
+    <span class="chip round">${room.phase === 'end' ? 'FINISH' : `ROUND ${room.turn}${room.maxTurns ? `/${room.maxTurns}` : ''}`}<small>${STEP_TEXT[room.step] || (room.phase === 'end' ? '게임 끝' : '')}</small></span>
+    <span class="chip">${m ? `⭐ <b>${pts(m.score)}</b>점 · 🏁 ${m.dist}칸` : '관전 중'}</span>`;
+}
+
+// 스토리보드 4: 현재 순위 (누적 점수 = 미니게임 순위 점수 + 전진한 칸 × 10)
+function renderRank() {
+  const rows = [...room.players].sort((a, b) => b.score - a.score || a.dist - b.dist);
+  $('rankbox').innerHTML = `<div class="ttl">👑 현재 순위 (누적 점수)</div>${rows.map((p, i) => `
+    <div class="rr ${i === 0 ? 'top' : ''} ${p.id === myId ? 'me' : ''}"><span class="no">${i + 1}</span><img src="${spriteUrl(p.seat)}">
+    <span class="nm">${esc(p.name)}</span><span class="sc">${pts(p.score)}점</span></div>`).join('')}`;
 }
 
 function renderCards() {
@@ -175,7 +235,7 @@ function renderCards() {
       ${roll}${doing}
       <div class="head" style="background:${CHARACTERS[p.seat].color}">${esc(p.name)}${p.id === myId ? ' · 나' : ''}</div>
       <img class="face" src="${spriteUrl(p.seat)}">
-      <div class="info">${p.dist === 0 ? '🏆 도착!' : `결승까지 ${p.dist}칸`}${p.cpu ? ' · CPU' : p.online ? '' : ' · 끊김'}</div>
+      <div class="info"><b>${pts(p.score)}점</b> · ${p.dist === 0 ? '🏆 도착!' : `🏁 ${p.dist}칸`}${p.cpu ? ' · CPU' : p.online ? '' : ' · 끊김'}</div>
       <div class="bag">${bag || '<small style="color:var(--sub)">주사위 없음</small>'}</div>
       <div class="flags">${flags}</div></div>`;
   }).join('');
@@ -241,6 +301,7 @@ function renderPrompt() {
     else stopTiming();
   }
   el.classList.remove('hidden');
+  el.classList.toggle('low', room.step === 'boss');   // 보스전에서는 대결 화면을 가리지 않게 아래로
   drawPrompt();
 }
 
@@ -295,7 +356,13 @@ setInterval(() => {
 
 addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT') return;
-  if (room?.phase === 'lobby' && (e.code === 'Enter' || e.code === 'Space') && room.host === myId) { e.preventDefault(); sendMsg({ t: 'start' }); return; }
+  if (screenName === 'title' && !introSeen && (e.code === 'Enter' || e.code === 'Space')) { e.preventDefault(); startIntro(); return; }
+  if (room?.phase === 'lobby' && (e.code === 'Enter' || e.code === 'Space')) {
+    e.preventDefault();
+    if (e.repeat) return;
+    if (room.host === myId) sendMsg({ t: 'start' }); else toggleReady();
+    return;
+  }
   if (room?.phase === 'end' && e.code === 'Enter' && room.host === myId) { sendMsg({ t: 'lobby' }); return; }
   if (room?.phase === 'play' && (e.code === 'KeyZ' || e.code === 'KeyM') && !mgOpen()) { board.toggleOverview(); return; }
   if (!cur || cur.sent || mgOpen()) return;
@@ -318,6 +385,7 @@ function renderMinigame() {
   const m = me();
   if (!m) return;
   $('mg').classList.remove('hidden');
+  board.paused = true;    // 미니게임이 화면을 다 가리는 동안 보드는 그리지 않는다 (미니게임이 끊기지 않게)
   if (mgSeed !== mg.seed) {
     // 새 미니게임 → 소개 화면 → 시작 시각에 열기
     mgSeed = mg.seed;
@@ -388,6 +456,7 @@ function focusBoard() {
 }
 
 function closeMinigame() {
+  board.paused = false;
   clearInterval(mgIntroTimer);
   if (!mgOpen()) return;
   $('mg').classList.add('hidden');
@@ -433,24 +502,113 @@ function renderMgResult() {
   el.innerHTML = `<div class="panel"><h2>🎮 ${esc(r.name)} 결과</h2>${r.rows.map((x) => {
     const p = room.players.find((pp) => pp.id === x.id);
     return `<div class="rank-row ${x.id === myId ? 'me' : ''}"><span class="rk">${x.rank}위</span><img src="${spriteUrl(p?.seat ?? 0)}">
-      <span class="nm">${esc(x.name)}</span><span class="sc">${x.score}</span><span class="rw">${x.reward.map((d) => DICE[d].icon).join(' ') || '·'}</span></div>`;
-  }).join('')}<div class="hint" style="margin-top:10px">1위: 재밌는 주사위 골라서 · 2위: 재밌는 주사위 · 3위: 보통 주사위</div></div>`;
+      <span class="nm">${esc(x.name)}</span><span class="sc">${x.score}</span><span class="pt">+${pts(x.points)}점</span><span class="rw">${x.reward.map((d) => DICE[d].icon).join(' ') || '·'}</span></div>`;
+  }).join('')}<div class="hint" style="margin-top:10px">순위 점수가 누적 점수에 더해져요 · 1~3위는 특수 주사위도!</div></div>`;
   el.classList.remove('hidden');
 }
 
+// 스토리보드 5: 최종 결과 집계 (누적 점수 순위) → "최종 1위! 보스전 진출!"
+const rankRows = () => room.ranking.map((x) => `
+  <div class="rank-row ${x.id === myId ? 'me' : ''}"><span class="rk">${x.rank}위</span><img src="${spriteUrl(x.seat)}">
+  <span class="nm">${esc(x.name)}${x.cpu ? ' <small style="color:var(--sub)">CPU</small>' : ''}</span><span class="sc">${pts(x.score)}점</span></div>`).join('');
+
+let stopEnding = null, endingShown = null;
 function renderEnd() {
-  const el = $('end');
-  if (room.phase !== 'end' || !room.ranking) return el.classList.add('hidden');
+  const el = $('end'), ending = $('ending');
   const host = room.host === myId;
-  el.innerHTML = `<div class="panel"><h2>🏆 ${esc(room.ranking[0].name)} 우승!</h2>${room.ranking.map((x) => `
-    <div class="rank-row ${x.id === myId ? 'me' : ''}"><span class="rk">${x.rank}위</span><img src="${spriteUrl(x.seat)}">
-    <span class="nm">${esc(x.name)}${x.cpu ? ' <small style="color:var(--sub)">CPU</small>' : ''}</span><span class="sc">${x.dist === 0 ? '도착!' : `${x.dist}칸 남음`}</span></div>`).join('')}
-    <div style="margin-top:16px">${host ? '<button class="btn gold" id="btn-again">대기실로 (Enter)</button>' : '<span class="hint">방장이 대기실로 돌아갈 수 있어요</span>'}
-    <button class="btn dim" id="btn-quit">나가기</button></div></div>`;
-  el.classList.remove('hidden');
-  if (host) $('btn-again').onclick = () => sendMsg({ t: 'lobby' });
-  $('btn-quit').onclick = () => sendMsg({ t: 'leave' });
+  const buttons = `${host ? '<button class="btn gold" id="btn-again">대기실로 (Enter)</button>' : '<span class="hint">방장이 대기실로 돌아갈 수 있어요</span>'}
+    <button class="btn dim" id="btn-quit">나가기</button>`;
+  const wire = () => {
+    if (host) $('btn-again').onclick = () => sendMsg({ t: 'lobby' });
+    $('btn-quit').onclick = () => sendMsg({ t: 'leave' });
+  };
+  // 엔딩 그림은 한 번만 켠다 (상태가 올 때마다 다시 그리면 깜빡임)
+  const showEnding = room.phase === 'end' && room.ranking && (room.ending === 'good' || room.ending === 'bad');
+  if (!showEnding && stopEnding) { stopEnding(); stopEnding = null; endingShown = null; }
+  ending.classList.toggle('hidden', !showEnding);
+
+  if (room.phase === 'play' && room.step === 'final' && room.ranking) {
+    el.innerHTML = `<div class="panel"><h2>🏆 최종 랭킹</h2>${rankRows()}
+      <div class="banner">최종 1위 ${esc(room.ranking[0].name)}! 보스전 진출!</div></div>`;
+    return el.classList.remove('hidden');
+  }
+  if (room.phase !== 'end' || !room.ranking) return el.classList.add('hidden');
+  if (!showEnding) {   // 엔딩 없이 끝난 경우(오류로 중단): 순위만
+    el.innerHTML = `<div class="panel"><h2>🏆 ${esc(room.ranking[0].name)} 최종 1위!</h2>${rankRows()}<div style="margin-top:16px">${buttons}</div></div>`;
+    el.classList.remove('hidden');
+    return wire();
+  }
+  // 스토리보드 6 · 7: 보스전에서 이기면 굿엔딩, 지면 배드엔딩
+  el.classList.add('hidden');
+  const good = room.ending === 'good';
+  const hero = room.ranking[0];
+  if (endingShown !== room.ending) {
+    if (stopEnding) stopEnding();
+    stopEnding = animate($('ending-cv'), good ? drawGoodEnding : drawBadEnding);
+    endingShown = room.ending;
+  }
+  const line = room.boss?.line ? `<div class="bubble">🧙 ${esc(room.boss.line)}${room.boss.lineSource === 'gemini' ? '<small>AI</small>' : ''}</div>` : '';
+  $('ending-body').innerHTML = `
+    <div class="ending-ttl"><small>${good ? 'GOOD ENDING' : 'BAD ENDING'}</small>${good ? '저주가 풀렸어요!' : '마법사의 승리…'}</div>
+    <div class="ending-txt">${good
+      ? `${esc(hero.name)}의 활약으로 마을 사람들이 다시 사람으로 돌아왔어요!`
+      : '마법사는 다음 판을 준비하며 새로운 수호자들을 기다립니다.'}</div>
+    ${line}
+    <div class="ending-mid">${good ? '' : '<div class="wizard-pic"></div>'}<div class="panel ending-rank">${rankRows()}</div></div>
+    <div class="ending-btns">${buttons}</div>`;
+  wire();
 }
 
-show('title');
-connect();
+// 보스전: 최종 1위 vs 마법사 주사위 대결 (서버 story.py 가 판정, 여기서는 보여 주기만)
+function renderBoss() {
+  const el = $('boss'), b = room.boss;
+  if (!b || room.step !== 'boss' || room.phase !== 'play') return el.classList.add('hidden');
+  const hero = room.players.find((p) => p.id === b.hero);
+  const last = b.last;
+  const stars = (n) => '★'.repeat(n) + '☆'.repeat(Math.max(0, b.need - n));
+  const msg = b.stage === 'intro' ? '주사위 대결! 먼저 2판을 이기면 승리'
+    : b.stage === 'roll' ? (b.hero === myId ? 'Space 로 주사위를 멈춰요!' : `${esc(hero?.name || '?')}에게 응원을 보내요! (Space)`)
+    : !last ? ''
+    : last.winner === 'hero' ? `${esc(hero?.name || '?')} 승리!` : last.winner === 'wizard' ? '마법사 승리…' : '비겼다! RE:ROLL!';
+  el.innerHTML = `<div class="boss-box">
+    <div class="boss-ttl">🧙 보스전 · 마법사의 성</div>
+    <div class="boss-sub">수호자: 타이밍 주사위(1~10) + 응원 1명당 +1 · 마법사: 주사위(1~10) + 저주의 힘 ${b.bonus}</div>
+    <div class="boss-row">
+      <div class="boss-side ${last?.winner === 'hero' ? 'win' : ''}"><div class="pic"><img src="${spriteUrl(hero?.seat ?? 0)}"></div>
+        <div class="nm">${esc(hero?.name || '?')}${b.hero === myId ? ' · 나' : ''}</div><div class="wins">${stars(b.heroWins)}</div>
+        <div class="die">${last ? last.heroTotal : '?'}</div><div class="plus">${last ? `주사위 ${last.heroDie} + 응원 ${last.cheers}` : ''}</div></div>
+      <div class="boss-vs">VS<small>${b.round ? `${b.round}판` : '준비'}</small></div>
+      <div class="boss-side wiz ${last?.winner === 'wizard' ? 'win' : ''}"><div class="pic"><div class="wizard-pic"></div></div>
+        <div class="nm">마법사</div><div class="wins">${stars(b.wizWins)}</div>
+        <div class="die">${last ? last.wizardTotal : '?'}</div><div class="plus">${last ? `주사위 ${last.wizardDie} + 저주 ${b.bonus}` : ''}</div></div>
+    </div>
+    ${b.line ? `<div class="bubble">🧙 ${esc(b.line)}${b.lineSource === 'gemini' ? '<small>AI</small>' : ''}</div>` : ''}
+    <div class="boss-msg">${msg}</div></div>`;
+  el.classList.remove('hidden');
+}
+
+// ---------------- 화면 미리 보기 (발표 · 확인용) ----------------
+// 주소 끝에 ?demo=good | bad | boss | final 을 붙이면 서버 없이 그 화면만 바로 보여 준다.
+//   예) http://localhost:8000/party/?demo=good  → 굿엔딩 화면
+function demoRoom(kind) {
+  const names = ['지호', '성원', '민지', '태윤', '하린'], scores = [2330, 1890, 1770, 1380, 1060];
+  const players = names.map((name, i) => ({ id: i + 1, name, cpu: false, online: true, seat: i, node: 30 - i * 4, dist: 20 + i * 5,
+    bag: [], flags: { skip: 0, mirror: false, shield: false, rest: false }, score: scores[i], ready: true }));
+  const ranking = players.map((p, i) => ({ id: p.id, name: p.name, cpu: false, seat: p.seat, dist: p.dist, score: p.score, over: -1, rank: i + 1 }));
+  const end = kind === 'good' || kind === 'bad';
+  const boss = { hero: 1, round: end ? 3 : 2, heroWins: kind === 'bad' ? 0 : end ? 2 : 1, wizWins: kind === 'bad' ? 2 : end ? 1 : 0,
+    stage: end ? 'done' : 'reveal', need: 2, bonus: 2, lineSource: 'canned',
+    last: end ? null : { round: 2, heroDie: 8, cheers: 3, heroTotal: 11, wizardDie: 6, wizardTotal: 8, winner: 'hero' },
+    line: kind === 'good' ? '크윽… 저주가… 풀리고 있어…!' : kind === 'bad' ? '…좋아. 다음 판도 준비해 두지.' : '이, 이럴 리가 없는데…!' };
+  return { t: 'room', code: '123456', phase: end ? 'end' : 'play', step: end ? null : kind === 'boss' ? 'boss' : 'final', turn: 10, maxTurns: 10, host: 1,
+    players, prompts: [], rolls: {}, mg: null, mgResult: null, log: [], ranking, boss: kind === 'final' ? null : boss, ending: end ? kind : null };
+}
+const demo = new URLSearchParams(location.search).get('demo');
+if (['good', 'bad', 'boss', 'final'].includes(demo)) {
+  myId = 1; board.myId = 1;
+  introSeen = true;
+  onRoom(demoRoom(demo));
+} else {
+  show('title');
+  connect();
+}

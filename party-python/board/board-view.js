@@ -530,6 +530,8 @@ export class BoardView {
   // 매 프레임
   // =====================================================
   draw() {
+    // 보드가 화면에 안 보일 때(메인 · 인트로 영상 · 대기실 · 미니게임 중)는 그리지 않는다 → 영상과 미니게임이 끊기지 않게
+    if (this.canvas.offsetParent === null || this.paused) return;
     if (!this.world) { this.world = this.buildWorld(); this.thumb = null; }
     this.updateCamera();
     const g = this.vg;

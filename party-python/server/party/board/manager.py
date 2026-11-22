@@ -55,6 +55,7 @@ class BoardManager:
         rng_factory: Callable[[], random.Random] | None = None,
         clock: Callable[[], float] | None = None,
         timings: Timings | None = None,
+        gemini=None,
     ):
         """
         minigame_runner: 미니게임을 직접 돌릴 함수 `async def runner(room, mg) -> dict | None` (없으면 원래 방식)
@@ -62,12 +63,14 @@ class BoardManager:
         rng_factory:     방마다 쓸 random.Random 을 만드는 함수 (테스트에서 씨앗 고정)
         clock:           지금 시각(1970년부터의 밀리초)을 돌려주는 함수
         timings:         연출 시간. 없으면 환경 변수 PARTY_SPEED 를 반영한 기본값
+        gemini:          서버의 Gemini 서비스 (보스전 마법사 대사). 없으면 기본 대사
         """
         self.minigame_runner = minigame_runner
         self.minigames = minigames
         self.rng_factory = rng_factory or random.Random
         self.clock = clock or now_ms
         self.T = timings or make_timings()
+        self.gemini = gemini
         self.rng = self.rng_factory()          # 방 번호 뽑기용
         self.rooms: dict[str, Room] = {}       # 방 번호 → 방
         self.ids = itertools.count(1)          # 참가자 번호표 (모든 방이 같이 씀 → 서버 전체에서 겹치지 않음)
@@ -84,9 +87,9 @@ class BoardManager:
 
     # ----- 방 -----
     def make_code(self) -> str:
-        """안 쓰는 4자리 방 번호."""
+        """안 쓰는 6자리 팀 코드."""
         while True:
-            code = str(1000 + int(self.rng.random() * 9000))
+            code = str(100000 + int(self.rng.random() * 900000))
             if code not in self.rooms:
                 return code
 
@@ -96,6 +99,7 @@ class BoardManager:
             ids=self.ids, prompt_ids=self.prompt_ids,
             minigames=self.minigames, minigame_runner=self.minigame_runner,
             on_close=lambda r: self.rooms.pop(r.code, None),
+            gemini=self.gemini,
         )
         self.rooms[room.code] = room
         print(f"[party {room.code}] 방 만듦")
@@ -196,14 +200,28 @@ class BoardManager:
                 player.name = name
                 room.broadcast()
 
+        elif t == "seat":   # 대기실에서 캐릭터 고르기 (자리 0~4 = 곰 · 고양이 · 오리 · 호랑이 · 시바)
+            seat = to_number(msg.get("seat"))
+            taken = {p.seat for p in room.players}
+            if room.phase == "lobby" and seat in range(R.MAX_PLAYERS) and seat not in taken:
+                player.seat = int(seat)   # 다른 사람이 이미 고른 캐릭터는 못 고른다
+                room.broadcast()
+
         elif t == "turns":   # 방장만: 턴 수
             n = to_number(msg.get("n"))
-            if is_host and room.phase == "lobby" and n in R.TURN_CHOICES:
+            # 0 = 턴 제한 없음 (누군가 결승에 도착할 때까지)
+            if is_host and room.phase == "lobby" and (n in R.TURN_CHOICES or n == 0):
                 room.max_turns = int(n)
                 room.broadcast()
 
-        elif t == "start":   # 방장만: 게임 시작
-            if is_host and room.phase == "lobby":
+        elif t == "ready":   # 대기실: 준비 완료 / 취소
+            if room.phase == "lobby":
+                player.ready = bool(msg.get("on", True))
+                room.broadcast()
+
+        elif t == "start":   # 방장만: 전원 준비 완료면 게임 시작 (방장은 늘 준비된 것으로 본다)
+            waiting = [p for p in room.humans() if p.online and not p.ready and p.id != room.host]
+            if is_host and room.phase == "lobby" and not waiting:
                 start_game(room)
 
         elif t == "lobby":   # 방장만: 끝난 뒤 다시 대기실로
@@ -212,9 +230,12 @@ class BoardManager:
                 room.phase = "lobby"
                 room.step = None
                 room.ranking = None
+                room.boss = room.ending = None
                 room.mg = room.mg_result = None
                 room.rolls = {}
                 for p in room.players:
+                    p.points = 0
+                    p.ready = False
                     p.hist = [R.START]
                     p.bag = []
                     p.flags = {}

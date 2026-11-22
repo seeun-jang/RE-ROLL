@@ -99,4 +99,13 @@ def attach_board(app: FastAPI, manager: BoardManager, board_dir: str | Path | No
     """
     app.include_router(create_router(manager))
     board_dir = Path(board_dir) if board_dir is not None else BOARD_DIR
-    app.mount("/party", StaticFiles(directory=str(board_dir), html=True), name="board")
+    app.mount("/party", _FreshStatic(directory=str(board_dir), html=True), name="board")
+
+
+class _FreshStatic(StaticFiles):
+    """화면 파일을 고치면 새로고침만으로 바로 보이게 한다(브라우저가 옛 파일을 계속 쓰지 않도록)."""
+
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache"   # 쓸 때마다 서버에 "바뀌었나요?" 하고 묻는다
+        return response

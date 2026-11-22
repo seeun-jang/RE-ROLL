@@ -132,3 +132,24 @@ $env:PYTHONUTF8='1'; .venv\Scripts\python.exe -m pytest -q tests\test_board_game
 ```
 
 `test_board_router.py` 의 TestClient 테스트는 `httpx` 가 없으면 건너뜁니다 (같은 내용을 ASGI 직접 호출로도 확인합니다).
+
+## 스토리보드 흐름 (게임 스토리보드 1~7번)
+
+| 스토리보드 | 화면 (`board/`) | 서버 (`server/party/board/`) |
+|---|---|---|
+| 1. 메인 화면 | `main.js` — "시작하려면 터치하세요" | — |
+| 2. 인트로 영상 | `story.js` `playIntro` — 그림 4장 + SKIP. `board/assets/intro.mp4` 를 넣으면 그 영상을 튼다 | — |
+| 3. 팀코드 입력 / 대기 화면 | `main.js` `renderLobby` — 팀 코드 6자리, 캐릭터 고르기, 준비 완료 | `manager.py` — `make_code`(6자리) · `seat` · `ready` · `start`(전원 준비 완료여야 시작) |
+| 4. 게임 진행 | `renderRank` — 현재 순위(누적 점수) | `game.py` — 주사위 이동 · 칸 효과 · 미니게임, 순위 점수 누적 |
+| 5. 최종 결과 집계 | `renderEnd` — 최종 랭킹 + "보스전 진출!" | `story.py` `tally` |
+| 보스전 | `renderBoss` | `story.py` `boss_battle` |
+| 6 · 7. 굿엔딩 / 배드엔딩 | `renderEnd` + `story.js` `drawGoodEnding` / `drawBadEnding` | `game.py` `finish_game(room, ending)` |
+
+- **누적 점수** = 미니게임 순위 점수(1위 500 · 2위 350 · 3위 250 · 4위 150 · 5위 100) + 전진한 칸 × 10
+- **보스전** (3판 2선승 주사위 대결): 수호자(최종 1위) = 타이밍 주사위 1~10 + 동료 응원 1명당 +1,
+  마법사 = 주사위 1~10 + 저주의 힘 2. 큰 쪽이 그 판을 이기고, 같으면 "RE:ROLL"(다시 굴림).
+  이기면 굿엔딩(`ending: "good"`), 지면 배드엔딩(`"bad"`).
+- **마법사 대사**는 서버의 Gemini 가 쓴다(`services/caster.py` 의 `LineBook`). 게임이 시작될 때 한 번 요청해 두고,
+  Gemini 가 꺼져 있거나 늦으면 `story.py` 의 기본 대사를 쓴다. 화면 말풍선의 `AI` 표시가 Gemini 가 쓴 대사.
+- 상태(snapshot)에 추가된 값: `players[].score` · `players[].ready` · `mgResult.rows[].points` · `ranking[].score` · `boss` · `ending`,
+  `step` 에 `final` · `boss` 추가. 화면이 보내는 메시지에 `seat{seat}` · `ready{on}` 추가.

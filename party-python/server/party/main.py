@@ -31,7 +31,8 @@ DIST_DIR = Path(__file__).resolve().parents[2] / "web" / "dist"
 pool = HubPool(GAMES, services=create_services())
 hub = pool.default
 # 보드게임(방 코드 · 주사위 · 칸 효과). 미니게임 차례에는 위 허브에서 서버 판정 게임을 돌린다.
-board = BoardManager(minigame_runner=make_minigame_runner(pool), minigames=board_minigames(GAMES))
+board = BoardManager(minigame_runner=make_minigame_runner(pool), minigames=board_minigames(GAMES),
+                     gemini=pool.services.get("gemini"))   # 보스전 마법사 대사를 쓰는 AI
 
 
 async def _tick_loop() -> None:

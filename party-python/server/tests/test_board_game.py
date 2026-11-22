@@ -28,8 +28,8 @@ from party.board.room import Player, Room, Timings, make_timings
 ROOT = Path(__file__).resolve().parents[2]
 
 ROOM_KEYS = {"t", "code", "phase", "step", "turn", "maxTurns", "host", "players", "prompts", "rolls",
-             "mg", "mgResult", "log", "ranking"}
-PLAYER_KEYS = {"id", "name", "cpu", "online", "seat", "node", "dist", "bag", "flags"}
+             "mg", "mgResult", "log", "ranking", "boss", "ending"}
+PLAYER_KEYS = {"id", "name", "cpu", "online", "seat", "node", "dist", "bag", "flags", "score", "ready"}
 FLAG_KEYS = {"skip", "mirror", "shield", "rest"}
 
 
@@ -41,6 +41,7 @@ def fast(**kw) -> Timings:
         MG_INTRO_MS=0, MG_MAX_MS=60000, MG_RESULT_MS=0, CPU_THINK_MS=(0, 0),
         START_MS=0, AFTER_MOVE_MS=0, SPACE_INTRO_MS=0, SLOT_MS=0, BIGDICE_MS=0, MG_POLL_MS=0, MG_SHOW_MS=0,
         AUTO_ANSWER_MS=0, LOBBY_GRACE_MS=5000, CLOSE_MS=5000,
+        FINAL_MS=0, BOSS_INTRO_MS=0, BOSS_REVEAL_MS=0,
     )
     base.update(kw)
     return Timings(**base)
@@ -119,6 +120,7 @@ async def enter(mgr, name, code=None, token=None, **kw) -> Client:
         await c.send("create", name=name)
     else:
         await c.send("join", name=name, code=code)
+        await c.send("ready")   # 손님은 준비 완료를 눌러야 방장이 시작할 수 있다
     return c
 
 
@@ -235,11 +237,12 @@ def test_create_join_and_errors():
         await a.send("create", name="  철수  ")
         snap = a.last()
         code = snap["code"]
-        assert len(code) == 4 and code.isdigit() and 1000 <= int(code) <= 9999
+        assert len(code) == 6 and code.isdigit() and 100000 <= int(code) <= 999999   # 스토리보드: 팀 코드 6자리
         assert snap["phase"] == "lobby" and snap["step"] is None and snap["maxTurns"] == 10 and snap["turn"] == 0
         assert snap["host"] == a.id and [p["name"] for p in snap["players"]] == ["철수"]
         assert snap["players"][0] == {"id": a.id, "name": "철수", "cpu": False, "online": True, "seat": 0,
-                                      "node": 0, "dist": R.DIST[0], "bag": [], "flags": {}}
+                                      "node": 0, "dist": R.DIST[0], "bag": [], "flags": {},
+                                      "score": 0, "ready": True}   # 방장은 늘 준비 완료
         await a.send("create", name="철수")   # 이미 방에 있으면 무시
         assert len(mgr.rooms) == 1
 
@@ -270,11 +273,52 @@ def test_create_join_and_errors():
         again = await enter(mgr, "다시", code)
         assert next(p for p in a.last()["players"] if p["name"] == "다시")["seat"] == 2
 
+        # 준비 완료: 한 명이라도 준비가 안 됐으면 방장이 시작할 수 없다 (방장 · CPU 는 늘 준비된 것으로 본다)
+        ready = lambda: {p["name"]: p["ready"] for p in a.last()["players"]}
+        assert ready()["철수"] is True and ready()["아주아주아주긴이"] is False and ready()["다시"] is True
+        await a.send("start")
+        assert a.last()["phase"] == "lobby"
+        await b.send("ready")
+        await b.send("ready", on=False)      # 취소할 수도 있다
+        assert ready()["아주아주아주긴이"] is False
+        await b.send("ready", on=True)
+        assert all(ready().values())
+
         # 시작한 방에는 못 들어감
         await a.send("start")
         assert a.last()["phase"] == "play"
+        await b.send("ready", on=False)      # 게임 중에는 못 바꿈
+        assert all(p["ready"] for p in a.last()["players"] if not p["cpu"])
         await late.send("join", name="늦은이", code=code)
         assert late.errors()[-1] == "이미 게임이 시작된 방이에요"
+
+    asyncio.run(main())
+
+
+def test_pick_character_in_lobby():
+    """대기실에서 캐릭터(자리) 고르기: 빈 자리만, 대기실에서만."""
+    async def main():
+        mgr = make()
+        a = await enter(mgr, "방장")
+        code = a.last()["code"]
+        b = await enter(mgr, "손님", code)
+        seat = lambda c: next(p["seat"] for p in a.last()["players"] if p["id"] == c.id)
+        assert (seat(a), seat(b)) == (0, 1)
+        await b.send("seat", seat=4)         # 빈 자리(시바)로
+        assert seat(b) == 4
+        await a.send("seat", seat=4)         # 남이 고른 캐릭터는 안 됨
+        assert seat(a) == 0
+        for bad in (5, -1, 2.5, "x", None):  # 없는 자리
+            await a.send("seat", seat=bad)
+        assert seat(a) == 0
+        await a.send("seat", seat="3")       # 글자 숫자도 받음
+        assert seat(a) == 3
+        await a.send("start")
+        snap = a.last()
+        assert [(p["seat"], p["name"]) for p in snap["players"]] == [
+            (0, "CPU 1"), (1, "CPU 2"), (2, "CPU 3"), (3, "방장"), (4, "손님")]
+        await a.send("seat", seat=0)         # 게임 중에는 못 바꿈
+        assert seat(a) == 3
 
     asyncio.run(main())
 
@@ -293,6 +337,8 @@ def test_host_only_messages():
         assert a.last()["maxTurns"] == 10
         await a.send("turns", n="15")    # 원본은 +msg.n 이라 글자 숫자도 받음
         assert a.last()["maxTurns"] == 15
+        await a.send("turns", n=0)       # 0 = 턴 제한 없음
+        assert a.last()["maxTurns"] == 0
         await a.send("turns", n=6)
         assert a.last()["maxTurns"] == 6
         await a.send("lobby")            # 끝난 뒤에만 됨
@@ -401,7 +447,7 @@ def check_snapshot(snap: dict) -> None:
         assert p["dist"] == R.DIST[p["node"]]
     for pr in snap["prompts"]:
         assert {"id", "pid", "kind", "title", "options", "deadline"} <= set(pr) <= {"id", "pid", "kind", "title", "options", "deadline", "meta"}
-        assert pr["kind"] in ("dice", "branch", "parity", "target", "timing", "reward")
+        assert pr["kind"] in ("dice", "branch", "parity", "target", "timing", "reward", "cheer")
         assert isinstance(pr["deadline"], (int, float)) and pr["deadline"] > 1e12   # 1970년부터의 밀리초
         if pr["kind"] == "branch":
             assert pr["meta"]["left"] >= 1 and [o["label"] for o in pr["options"]] == ["위 길", "아래 길"]
@@ -423,10 +469,10 @@ def check_snapshot(snap: dict) -> None:
         assert "results" not in snap["mg"] and "skip" not in snap["mg"]
     if snap["mgResult"] is not None:
         assert set(snap["mgResult"]) == {"name", "rows"}
-        assert all(set(row) == {"id", "name", "score", "rank", "reward"} for row in snap["mgResult"]["rows"])
+        assert all(set(row) == {"id", "name", "score", "rank", "reward", "points"} for row in snap["mgResult"]["rows"])
         assert [row["rank"] for row in snap["mgResult"]["rows"]] == [1, 2, 3, 4, 5]
     if snap["ranking"] is not None:
-        assert all(set(row) == {"id", "name", "cpu", "seat", "dist", "over", "rank"} for row in snap["ranking"])
+        assert all(set(row) == {"id", "name", "cpu", "seat", "dist", "over", "rank", "score"} for row in snap["ranking"])
     assert len(snap["log"]) <= 8
     json.dumps(snap, allow_nan=False)
 
@@ -446,7 +492,11 @@ def test_full_game_default_minigame():
         assert {"choose", "reveal", "move", "space"} <= steps
         end = snaps[-1]
         assert end["step"] is None and [r["rank"] for r in end["ranking"]] == [1, 2, 3, 4, 5]
-        assert [r["dist"] for r in end["ranking"]] == sorted(r["dist"] for r in end["ranking"])
+        # 스토리보드 5: 최종 순위는 누적 점수 순 → 1위가 보스전 → 엔딩
+        assert [r["score"] for r in end["ranking"]] == sorted((r["score"] for r in end["ranking"]), reverse=True)
+        assert end["ending"] in ("good", "bad") and end["boss"]["stage"] == "done"
+        assert end["boss"]["hero"] == end["ranking"][0]["id"] and max(end["boss"]["heroWins"], end["boss"]["wizWins"]) >= 1
+        assert {"final", "boss"} <= steps
         assert 1 <= end["turn"] <= 6
         if end["ranking"][0]["dist"] != 0:   # 아무도 결승에 못 갔으면 마지막 턴까지 한 것
             assert end["turn"] == 6
@@ -466,8 +516,9 @@ def test_full_game_default_minigame():
         assert all(x[1] != y[1] for x, y in zip(order, order[1:]))
         # 알림
         fx = a.of("fx")
-        assert fx[0] == {"t": "fx", "kind": "announce", "text": "게임 시작! 결승에 먼저 도착하면 우승", "icon": "🏁", "pid": None, "big": True}
-        assert fx[-1]["text"].endswith("우승!") and fx[-1]["icon"] == "🏆"
+        assert fx[0] == {"t": "fx", "kind": "announce", "text": "게임 시작! 점수를 모아 마법사에게 도전하자", "icon": "🏁", "pid": None, "big": True}
+        assert fx[-1]["text"] in ("저주가 풀렸어요!", "마법사의 승리…") and fx[-1]["icon"] in ("🎉", "🌙")
+        assert any(f["text"].endswith("보스전 진출!") for f in fx)
         assert any(f["text"] == "1턴" for f in fx) and any("미니게임 끝! (77점)" in f["text"] for f in fx)
         for m in a.inbox:
             json.dumps(m, allow_nan=False)
@@ -477,6 +528,7 @@ def test_full_game_default_minigame():
         await a.send("lobby")
         snap = a.last()
         assert snap["phase"] == "lobby" and snap["step"] is None and snap["ranking"] is None
+        assert snap["boss"] is None and snap["ending"] is None and snap["players"][0]["score"] == 0
         assert snap["mg"] is None and snap["mgResult"] is None and snap["rolls"] == {}
         assert [(p["name"], p["node"], p["bag"], p["flags"]) for p in snap["players"]] == [("철수", 0, [], {})]
         await a.send("start")            # 다시 시작할 수 있다
@@ -559,7 +611,7 @@ def test_goal_ends_game():
         assert end["turn"] == 1 and end["ranking"][0]["id"] == a.id and end["ranking"][0]["dist"] == 0
         assert end["ranking"][0]["over"] >= 0 and all(r["over"] == -1 for r in end["ranking"][1:])
         assert not any(s["step"] in ("space", "minigame") for s in a.of("room"))   # 도착하면 바로 끝
-        assert a.of("fx")[-1]["text"] == "철수 우승!"
+        assert any(f["text"] == "최종 1위 철수! 보스전 진출!" for f in a.of("fx")) and end["boss"]["hero"] == a.id
 
     asyncio.run(main())
 
@@ -641,7 +693,7 @@ def test_injected_runner_ranks_and_extra_mg_keys(capsys):
         async def runner(room, mg):
             humans = room.humans()
             seen.append([(p.id, p.name, p.seat, p.token, p.online) for p in humans])
-            assert room.mg is mg and len(room.code) == 4
+            assert room.mg is mg and len(room.code) == 6
             mg["url"] = f"/mini/{room.code}/{mg['id']}"     # 화면에 보여줄 값을 추가
             room.broadcast()
             await asyncio.sleep(0)
@@ -1049,5 +1101,132 @@ def test_move_branch_goal_and_back():
         me.hist = path_to(R.GOAL)[:-2]
         assert await G.move(room, me, 6) == 2 and me.node == R.GOAL and me.goal_over == 4
         assert await G.move(room, me, 3) == 0
+
+    asyncio.run(main())
+
+
+# ---------------- 스토리보드 5~7: 누적 점수 · 보스전 · 엔딩 ----------------
+def test_score_is_minigame_points_plus_progress():
+    """누적 점수 = 미니게임 순위 점수 + 전진한 칸 × 10."""
+    from party.board import story
+
+    room = play_room(human=False)
+    p = room.players[0]                      # 5번 칸에 서 있다 (출발에서 5칸 전진)
+    assert story.score_of(p) == 5 * story.STEP_POINTS
+    p.points += story.rank_points(1)
+    assert story.score_of(p) == 500 + 50 and room.snapshot()["players"][0]["score"] == 550
+    assert [story.rank_points(r) for r in range(0, 7)] == [0, 500, 350, 250, 150, 100, 0]
+
+
+def test_tally_ranks_by_score_not_position():
+    from party.board import story
+
+    room = play_room(human=False)
+    a, b, c, d, e = room.players             # 서 있는 칸: 5 · 3 · 8 · 10 · 12
+    b.points = 1000                          # 제일 뒤에 있지만 미니게임을 잘한 사람이 1위
+    rows = story.tally(room)
+    assert rows[0]["id"] == b.id and rows[0]["score"] == 1030 and [r["rank"] for r in rows] == [1, 2, 3, 4, 5]
+    assert [r["id"] for r in rows[1:]] == [e.id, d.id, c.id, a.id]   # 나머지는 전진한 칸 순
+
+
+@pytest.mark.parametrize("hero_die, wizard_dice, want", [
+    (10, [1, 1], "good"),        # 10 > 1+2 두 번 → 굿엔딩
+    (1, [10, 10], "bad"),        # 1 < 10+2 두 번 → 배드엔딩
+    (5, [3, 10, 1, 1], "good"),  # 5 = 3+2 비김(RE:ROLL) → 짐 → 이김 → 이김
+])
+def test_boss_battle_endings(hero_die, wizard_dice, want):
+    from party.board import story
+
+    async def main():
+        room = play_room(human=True)
+        hero = room.players[0]
+        hero.points = 5000                   # 사람(0번)이 최종 1위
+        hero.conn.send = lambda msg: None    # 자동 대답을 끄고 아래에서 직접 대답한다
+        story.tally(room)
+        dice = iter(wizard_dice)
+        real_rand = room.rand
+        calls = {"n": 0}
+
+        def fake_rand(n):
+            # rand(10) 은 한 판에 두 번 불린다: ① 수호자가 시간 안에 못 눌렀을 때 쓸 값 ② 마법사 주사위
+            if n != 10:
+                return 0                     # CPU 는 응원 안 함
+            calls["n"] += 1
+            return 0 if calls["n"] % 2 else next(dice) - 1
+
+        room.rand = fake_rand
+
+        task = asyncio.ensure_future(story.boss_battle(room))
+        rounds = []
+        while not task.done():
+            for pr in list(room.prompts.values()):
+                if pr.pid == hero.id:
+                    assert pr.kind == "timing" and room.boss["stage"] == "roll"
+                    room.answer(hero, {"id": pr.id, "value": hero_die})
+            if room.boss and room.boss["last"] and room.boss["last"]["round"] not in [r["round"] for r in rounds]:
+                rounds.append(dict(room.boss["last"]))
+            await asyncio.sleep(0)
+        assert task.result() == want
+        room.rand = real_rand
+        assert room.step == "boss" and room.boss["stage"] == "done" and room.boss["hero"] == hero.id
+        assert room.boss["line"] and room.boss["lineSource"] == "canned"     # Gemini 가 없으면 기본 대사
+        assert len(rounds) == len(wizard_dice)
+        for r, w in zip(rounds, wizard_dice):
+            assert r["heroTotal"] == hero_die + r["cheers"] and r["wizardTotal"] == w + story.WIZARD_BONUS
+            assert r["winner"] == ("hero" if r["heroTotal"] > r["wizardTotal"] else "wizard" if r["heroTotal"] < r["wizardTotal"] else "tie")
+        G.finish_game(room, task.result())
+        assert room.phase == "end" and room.ending == want and room.snapshot()["ending"] == want
+
+    asyncio.run(main())
+
+
+def test_boss_cheer_adds_one_per_friend():
+    from party.board import story
+
+    async def main():
+        room = play_room(human=True)
+        hero, friend = room.players[0], room.players[1]
+        friend.cpu = False
+        friend.conn = AutoConn(room, friend)     # 사람 동료: 응원 질문이 오면 바로 누른다
+        hero.points = 5000
+        story.tally(room)
+        room.rand = lambda n: 0                  # 마법사 주사위 1 · CPU 는 응원 안 함
+        assert await story.boss_battle(room) == "good"
+        # 수호자 7(자동 대답) + 응원 1 = 8 > 마법사 1 + 2
+        assert room.boss["heroWins"] == 2 and room.boss["wizWins"] == 0 and room.boss["round"] == 2
+
+    asyncio.run(main())
+
+
+def test_wizard_lines_come_from_gemini_when_available():
+    from party.board import story
+
+    class FakeGemini:
+        def generate_json(self, prompt, schema=None, temperature=1.0, images=None, system=None):
+            assert "마법사" in system and set(schema["properties"]) == set(story.WIZARD_KINDS)
+            return {kind: [f"AI {kind} {{name}}"] for kind in story.WIZARD_KINDS}
+
+    book = story.make_wizard(FakeGemini(), ["철수"])
+    for _ in range(200):
+        if book.ready:
+            break
+        time.sleep(0.01)
+    assert book.line("intro", lambda: 0.0, name="철수") == ("AI intro 철수", "gemini")
+    assert story.make_wizard(None, []).line("bad", lambda: 0.0, name="철수")[1] == "canned"
+
+
+def test_no_turn_limit_plays_until_someone_reaches_goal():
+    """턴 제한 없음(0): 정해진 턴에서 끝나지 않고, 누군가 결승에 도착해야 끝난다."""
+    async def main():
+        mgr = make(seed=5)
+        a = await enter(mgr, "철수", auto=True, score=10)
+        await a.send("turns", n=0)
+        await a.send("start")
+        await until(lambda: a.last()["phase"] == "end", timeout=60)
+        end = a.last()
+        assert end["maxTurns"] == 0 and end["turn"] > 10            # 기본값(10턴)을 넘겨서도 계속했다
+        assert any(p["dist"] == 0 for p in end["players"])          # 누군가 결승에 도착해서 끝났다
+        assert end["ending"] in ("good", "bad")                     # 그 뒤 최종 순위 → 보스전 → 엔딩은 똑같이
+        assert not any("마지막" in f["text"] for f in a.of("fx"))
 
     asyncio.run(main())

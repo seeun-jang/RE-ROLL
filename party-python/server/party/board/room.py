@@ -42,6 +42,9 @@ class Timings:
     MG_INTRO_MS: float = 3500       # 미니게임 소개
     MG_MAX_MS: float = 6 * 60 * 1000  # 미니게임 최대 대기 (6분)
     MG_RESULT_MS: float = 6000      # 미니게임 결과 보여주기
+    FINAL_MS: float = 7000          # 최종 순위(누적 점수)를 보여준 뒤 보스전으로
+    BOSS_INTRO_MS: float = 4500     # 보스전 시작 연출
+    BOSS_REVEAL_MS: float = 4000    # 보스전 한 판의 결과 보여주기
     CPU_THINK_MS: tuple = (500, 1300)  # CPU 가 고르는 데 걸리는 시간 (최소, 최대)
 
     # 아래는 원본 코드에 숫자로 직접 적혀 있던 값 (PARTY_SPEED 의 영향을 받지 않음)
@@ -58,7 +61,7 @@ class Timings:
 
 
 _SPEED_KEYS = ("STEP_MS", "REVEAL_MS", "EFFECT_MS", "CHOOSE_MS", "ASK_MS", "TIMING_MS",
-               "MG_INTRO_MS", "MG_MAX_MS", "MG_RESULT_MS")
+               "MG_INTRO_MS", "MG_MAX_MS", "MG_RESULT_MS", "FINAL_MS", "BOSS_INTRO_MS", "BOSS_REVEAL_MS")
 
 
 def make_timings(speed: float | None = None) -> Timings:
@@ -98,6 +101,8 @@ class Player:
         self.flags: dict = {}              # {"skip", "mirror", "shield", "rest"}
         self.goal_over: int | None = None  # 결승에 들어올 때 남은 걸음 수 (많이 남을수록 먼저 들어온 셈)
         self.landed = False                # 이번 턴에 주사위로 움직여서 칸 효과를 받을 사람인지
+        self.points = 0                    # 미니게임 순위로 받은 점수 (누적 점수 = 이것 + 전진한 칸 × 10)
+        self.ready = False                 # 대기실에서 '준비 완료'를 눌렀는지
 
     @property
     def online(self) -> bool:
@@ -163,6 +168,7 @@ class Room:
         minigames: list[dict] | None = None,
         minigame_runner: Callable[["Room", dict], Awaitable[dict | None]] | None = None,
         on_close: Callable[["Room"], None] | None = None,
+        gemini=None,
     ):
         self.code = code
         self.rng = rng or random.Random()
@@ -173,9 +179,10 @@ class Room:
         self.minigames = list(minigames) if minigames is not None else list(R.MINIGAMES)
         self.minigame_runner = minigame_runner
         self.on_close = on_close
+        self.gemini = gemini            # 마법사 대사를 쓰는 AI (없으면 기본 대사)
 
         self.phase = "lobby"            # lobby | play | end
-        self.step: str | None = None    # choose | reveal | move | space | minigame | mgResult
+        self.step: str | None = None    # choose | reveal | move | space | minigame | mgResult | final | boss
         self.turn = 0
         self.max_turns = R.DEFAULT_TURNS
         self.host: int | None = None    # 방장의 참가자 번호
@@ -186,6 +193,9 @@ class Room:
         self.mg: dict | None = None             # 진행 중인 미니게임 {"id","name","seed","startAt","results",…}
         self.mg_result: dict | None = None      # 마지막 미니게임 순위표
         self.ranking: list[dict] | None = None  # 최종 순위 (게임이 끝나면)
+        self.boss: dict | None = None           # 보스전 상태 (story.py)
+        self.ending: str | None = None          # 'good' | 'bad' (보스전 결과)
+        self.wizard = None                      # 마법사 대사 묶음 (story.make_wizard)
         self.last_game: str | None = None       # 바로 전 턴의 미니게임 (연속으로 안 나오게)
         self.history: list[list[list[int]]] = []  # 턴마다 모두의 위치 (타임머신 칸)
         self.dead = False                       # 방이 닫혔는지
@@ -247,6 +257,8 @@ class Room:
                 {
                     "id": p.id, "name": p.name, "cpu": p.cpu, "online": p.cpu or p.online, "seat": p.seat,
                     "node": p.node, "dist": p.dist, "bag": [d["id"] for d in p.bag], "flags": p.flags,
+                    "score": p.points + (R.DIST[R.START] - p.dist) * 10,   # 누적 점수 (story.score_of 와 같은 식)
+                    "ready": p.cpu or p.ready or p.id == self.host,        # 방장 · CPU 는 늘 준비 완료
                 }
                 for p in self.players
             ],
@@ -256,6 +268,8 @@ class Room:
             "mgResult": self.mg_result,
             "log": self.log[-8:],
             "ranking": self.ranking,
+            "boss": self.boss,
+            "ending": self.ending,
         }
 
     def broadcast(self) -> None:

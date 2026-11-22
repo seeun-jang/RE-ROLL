@@ -17,6 +17,10 @@ import traceback
 from . import data as R
 from .jsutil import clean_score, js_round, tidy_number
 from .room import Gone, Player, Room
+from . import story
+
+
+NO_LIMIT_CAP = 99   # '턴 제한 없음'일 때의 안전장치 (보통은 그 전에 누군가 결승에 도착한다)
 
 
 async def together(coros) -> list:
@@ -133,7 +137,11 @@ def start_game(room: Room) -> None:
         p.bag = []
         p.flags = {"skip": 0, "mirror": False, "shield": False, "rest": False}
         p.goal_over = None
-    room.announce("게임 시작! 결승에 먼저 도착하면 우승", icon="🏁", big=True)
+        p.points = 0
+    room.boss = room.ending = None
+    # 마법사 대사를 지금 미리 부탁해 둔다 (보스전 때는 이미 와 있다)
+    room.wizard = story.make_wizard(room.gemini, [p.name for p in room.players])
+    room.announce("게임 시작! 점수를 모아 마법사에게 도전하자", icon="🏁", big=True)
     room.broadcast()
     room.task = asyncio.get_running_loop().create_task(run_game(room))
 
@@ -141,10 +149,12 @@ def start_game(room: Room) -> None:
 async def run_game(room: Room) -> None:
     try:
         await room.wait(room.T.START_MS)
-        while room.turn < room.max_turns:
+        # max_turns 가 0 이면 턴 제한 없음: 누군가 결승에 도착할 때까지 (끝없이 돌지 않게 99턴에서는 멈춘다)
+        limit = room.max_turns or NO_LIMIT_CAP
+        while room.turn < limit:
             room.turn += 1
             room.history.append([list(p.hist) for p in room.players])
-            last = " (마지막!)" if room.turn == room.max_turns else ""
+            last = " (마지막!)" if room.turn == limit else ""
             room.announce(f"{room.turn}턴{last}", icon="🎲", big=True)
             await phase_roll(room)
             if winners(room):
@@ -153,7 +163,15 @@ async def run_game(room: Room) -> None:
             if winners(room):
                 break
             await phase_minigame(room)
-        finish_game(room)
+        # 스토리보드 5~7: 최종 순위(누적 점수) → 1위의 보스전 → 엔딩
+        room.step = "final"
+        room.prompts.clear()
+        rows = story.tally(room)
+        room.announce(f"최종 1위 {rows[0]['name']}! 보스전 진출!", icon="🏆", big=True)
+        room.broadcast()
+        await room.wait(room.T.FINAL_MS)
+        ending = await story.boss_battle(room)
+        finish_game(room, ending)
     except Gone:
         return   # 방이 닫힘
     except Exception:
@@ -166,23 +184,16 @@ async def run_game(room: Room) -> None:
             traceback.print_exc()
 
 
-def finish_game(room: Room) -> None:
+def finish_game(room: Room, ending: str | None = None) -> None:
+    """게임 끝. ending: 'good'(보스전 승리) · 'bad'(패배) · None(오류로 중간에 끝남 → 순위만 보여 줌)."""
     room.step = None
     room.phase = "end"
     room.prompts.clear()
-    rows = [
-        {"id": p.id, "name": p.name, "cpu": p.cpu, "seat": p.seat, "dist": p.dist,
-         "over": p.goal_over if p.goal_over is not None else -1}
-        for p in room.players
-    ]
-    # 결승에 가까운 순 → 결승에 들어올 때 걸음이 많이 남은 순 → 그래도 같으면 랜덤
-    # (원본은 비교 함수 안에서 Math.random() - 0.5 를 쓴다. 여기서는 한 줄에 난수 하나씩 뽑아 그 순서로 정한다)
-    ties = {row["id"]: room.rng.random() for row in rows}
-    rows.sort(key=lambda row: (row["dist"], -row["over"], ties[row["id"]]))
-    for i, row in enumerate(rows):
-        row["rank"] = i + 1
-    room.ranking = rows
-    room.announce(f"{rows[0]['name']} 우승!", icon="🏆", big=True)
+    room.ending = ending
+    if room.ranking is None:
+        story.tally(room)
+    text = {"good": "저주가 풀렸어요!", "bad": "마법사의 승리…"}.get(ending, f"{room.ranking[0]['name']} 최종 1위!")
+    room.announce(text, icon={"good": "🎉", "bad": "🌙"}.get(ending, "🏆"), big=True)
     room.broadcast()
 
 
@@ -624,10 +635,16 @@ async def phase_minigame(room: Room) -> None:
     for i, s in enumerate(scores):
         s["rank"] = i + 1
 
+    # 순위 점수를 누적 점수에 더한다 (1위 500 · 2위 350 · 3위 250 · 4위 150 · 5위 100)
+    for s in scores:
+        s["points"] = story.rank_points(s["rank"])
+        s["p"].points += s["points"]
+
     room.step = "mgResult"
     room.mg_result = {
         "name": mg["name"],
-        "rows": [{"id": s["p"].id, "name": s["p"].name, "score": s["score"], "rank": s["rank"], "reward": []} for s in scores],
+        "rows": [{"id": s["p"].id, "name": s["p"].name, "score": s["score"], "rank": s["rank"], "reward": [],
+                  "points": s["points"]} for s in scores],
     }
     room.broadcast()
     await room.wait(T.MG_SHOW_MS)
