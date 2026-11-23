@@ -1,6 +1,7 @@
 # RE:ROLL 🎲
+AI-Powered 2D Multiplayer Board Game  
 
-AI-Powered 2D Multiplayer Board Game
+게임하기 -> https://reroll-party.onrender.com  
 
 ## 프로젝트 소개
 RE:ROLL은 4개의 AI 기반 미니게임과
