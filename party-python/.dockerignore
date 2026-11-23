@@ -1,0 +1,10 @@
+# 이미지에 넣지 않는 것 (용량이 크거나, 빌드하면 다시 생기거나, 올리면 안 되는 것)
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+web/dist
+web/public/mediapipe
+docs
+**/.env
+*.zip
