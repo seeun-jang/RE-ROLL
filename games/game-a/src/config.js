@@ -1,173 +1,222 @@
 // =============================================================
-//  블랙컴뱃 설정값 모음
-//  게임 밸런스나 조작 키를 바꾸고 싶으면 이 파일만 수정하면 됩니다.
+//  PFC 설정값 모음
+//  마법사 교수(원거리 마법) vs student(근접 격투) — 서로 다른 방식으로 이기는 비대칭 대결
+//  밸런스, 시간, 키 배치, 캐릭터 색은 이 파일만 고치면 됩니다.
 // =============================================================
 
 export const GAME_ID = 'game-a';
-export const GAME_TITLE = '블랙컴뱃';
-export const GAME_TITLE_EN = 'BLACK COMBAT';
+export const GAME_TITLE = 'PFC';
+export const GAME_TITLE_EN = 'PFC';
+export const GAME_SUBTITLE = 'Polytech Fighting Championship';
 
-// 경기 규칙
+// ---------------- 경기 규칙 ----------------
 export const MATCH = {
-  roundSeconds: 60,     // 1라운드 시간
-  maxHp: 150,           // 체력
-  introSeconds: 2.2,    // "ROUND 1" → "FIGHT!" 연출 시간
-  koBannerSeconds: 3,   // K.O. 후 결과 화면까지
-  timeUpBannerSeconds: 2.6, // TIME UP 후 결과 화면까지
+  roundsToWin: 2,         // 3판 2선승
+  maxRounds: 3,           // 3라운드까지 해도 동점이면 무승부
+  roundSeconds: 50,
+  introSeconds: 2.8,
+  roundEndSeconds: 3.0,   // K.O./TIME 연출
+  matchEndSeconds: 3.6,   // 최종 승자 연출 후 결과 화면
 };
 
-// 플레이어 정보 (ID는 메인 게임과 맞추기 위해 p1, p2로 고정)
-//   color      : 트렁크, 헤드밴드, 손목 테이프, 코너 색
-//   skin       : 피부색 / skinShade: 그늘진 쪽 피부색
-//   hair       : 머리색 / hairStyle: 'spiky'(삐죽 머리) | 'short'(짧은 머리)
+// ---------------- 선수 ----------------
+//  resource: 기술에 쓰는 자원 (교수 = 마나, student = 스태미나)
 export const PLAYERS = [
   {
     id: 'p1',
     label: 'P1',
-    name: '레드',
-    side: 'left',        // 웹캠 화면 왼쪽에 서는 플레이어
-    color: '#FF3B5C',
-    colorDeep: '#B5162F',
-    skin: '#F2C6A2',
-    skinShade: '#D9A47E',
-    hair: '#1B1B22',
-    hairStyle: 'spiky',
+    name: 'student',
+    title: '발톱의 격투가',
+    style: '근접 돌격형',
+    kind: 'tiger',
+    side: 'left',
+    color: '#FF4B4B',
+    glow: '#FF9A3D',
+    height: 1.0,
+    bulk: 1.0,
+    walkSpeed: 270,
+    resource: { name: '스태미나', short: 'STA', max: 100, regen: 30, color: '#4EE0A6' },
+    palette: {
+      fur: '#F28A2E', furLight: '#FFB765', furDark: '#B85A14',
+      white: '#FFF4E6', whiteDark: '#E3CDB6',
+      stripe: '#2A1610',
+      trunks: '#D8172E', trunksDark: '#8E0B1C', trim: '#F5C542',
+      band: '#D8172E',
+      eye: '#E8F25A',
+    },
   },
   {
     id: 'p2',
     label: 'P2',
-    name: '블루',
-    side: 'right',       // 웹캠 화면 오른쪽에 서는 플레이어
-    color: '#3FB6FF',
-    colorDeep: '#0B6FB8',
-    skin: '#C98E66',
-    skinShade: '#A8704B',
-    hair: '#4A2E1C',
-    hairStyle: 'short',
+    name: '황종철 교수',
+    title: '대마법사',
+    style: '원거리 마법형',
+    kind: 'professor',
+    side: 'right',
+    color: '#8C6BFF',
+    glow: '#A66BFF',
+    height: 1.24,
+    bulk: 1.18,
+    walkSpeed: 215,
+    resource: { name: '마나', short: 'MP', max: 100, regen: 22, color: '#6FB8FF' },
+    palette: {
+      skin: '#E7B48E', skinLight: '#F6D2B2', skinDark: '#B47E5C',
+      beard: '#F2F0F7', beardDark: '#B9B5C8',
+      pants: '#1C1A22', pantsLight: '#34303E', pantsDark: '#0A090D',
+      sash: '#0E0D12', trim: '#8C6BFF',
+      hat: '#17151D', hatLight: '#2E2A38',
+      rune: '#B98CFF',
+      eye: '#C7A4FF',
+    },
   },
 ];
 
-// 관중 분위기
-export const CROWD = {
-  baseHype: 0.35,        // 경기 중 기본 열기 (0 ~ 1)
-  hitHype: 0.12,         // 타격이 들어갈 때마다 오르는 열기
-  hypeDecay: 0.18,       // 초당 식는 정도
-  cheers: ['와아!', '나이스!', '한 방 더!', '가자!', '좋아!', '오오!', '대박!'],
-};
-
-// 소리 (브라우저에서 직접 합성, 파일 없음)
-export const SOUND = {
-  enabled: true,  // 처음 시작할 때 소리 켜짐 여부 (경기 화면 오른쪽 아래 버튼으로 끄고 켤 수 있음)
-  volume: 0.8,
-};
-
-// 링 (화면 기준 1280×720)
-export const ARENA = {
+// ---------------- 무대 ----------------
+export const STAGE = {
   width: 1280,
   height: 720,
-  floorY: 615,      // 선수가 서 있는 바닥 높이
-  leftBound: 150,   // 왼쪽 로프
-  rightBound: 1130, // 오른쪽 로프
-  startX: { p1: 440, p2: 840 },
+  floorY: 560,
+  left: 120,
+  right: 1480,
+  worldWidth: 1600,
+  startX: { p1: 560, p2: 1040 },
+  zoomNear: 1.15,
+  zoomFar: 0.86,
 };
 
-// 선수 기본 능력
+// ---------------- 공통 ----------------
 export const FIGHTER = {
-  walkSpeed: 270,        // 이동 속도 (px/초)
-  guardWalkSpeed: 90,    // 가드하며 이동할 때
-  bodyHalfWidth: 60,     // 몸 폭의 절반 (서로 겹치지 않게)
-  staminaMax: 100,
-  staminaRegen: 30,      // 초당 회복
-  staminaRegenGuard: 6,  // 가드 중 초당 회복
-  powerMax: 100,         // 필살기 게이지
+  maxHp: 160,
+  bodyRadius: 62,
+  inputBuffer: 0.15,
+  comboWindow: 0.42,
+  closeRange: 165,        // 이 거리 안이면 "가까운 기술"로 바뀜
+  superMax: 100,
+  superPerDamageDealt: 0.55,
+  superPerDamageTaken: 0.75,
+  guardRegenFactor: 0.35, // 가드 중 자원 회복 비율
+  knockdownSeconds: 0.75, // 큰 기술에 맞고 넘어져 있는 시간
+  getupSeconds: 0.45,
+  getupInvuln: 0.6,
 };
 
-// 공격 종류
-//   startup  : 공격 시작 → 맞힐 수 있게 되기까지 (초)
-//   active   : 맞힐 수 있는 시간
-//   recovery : 공격 후 다시 움직일 수 있을 때까지
-//   reach    : 두 선수 중심 사이 거리가 이 값 이하면 명중
-//   hitstun  : 맞은 선수가 못 움직이는 시간
-//   guardCost: 상대가 가드로 막을 때 상대 스태미나 소모량
-export const ATTACKS = {
-  punch: {
-    label: '펀치',
-    startup: 0.07, active: 0.09, recovery: 0.16,
-    reach: 160, damage: 6, stamina: 8,
-    knockback: 70, hitstun: 0.26, power: 10, guardCost: 11, shake: 3,
-  },
-  kick: {
-    label: '킥',
-    startup: 0.17, active: 0.11, recovery: 0.3,
-    reach: 185, damage: 11, stamina: 18,
-    knockback: 170, hitstun: 0.42, power: 14, guardCost: 24, shake: 7,
-  },
-  special: {
-    label: '필살기',
-    startup: 0.28, active: 0.16, recovery: 0.5,
-    reach: 205, damage: 22, stamina: 0,
-    knockback: 360, hitstun: 0.8, power: 0, guardCost: 60, shake: 15,
-  },
-};
-
-// 가드
 export const GUARD = {
-  damageFactor: 0.15,     // 막으면 데미지가 이 비율로 줄어듦
-  knockbackFactor: 0.4,
-  blockStun: 0.14,        // 막은 직후 잠깐 경직
-  breakStun: 0.8,         // 스태미나가 바닥나 가드가 깨지면 경직
+  chip: 0.2,          // 막아도 들어가는 데미지 비율
+  blockStun: 0.16,
+  breakStun: 0.9,     // 자원이 바닥나 방어가 깨짐
 };
 
-// 필살기 게이지 충전량
-export const POWER = {
-  onTaken: 8,    // 맞았을 때 (역전 기회)
-  onBlocked: 4,  // 막았을 때
+// ---------------- 기술 ----------------
+//  공통 필드
+//    startup / active / recovery : 시작 → 판정 → 회복 (초)
+//    cost      : 자원 소모     damage, hitstun, knockback : 맞았을 때
+//    guardCost : 막을 때 상대 자원 소모     heavy : 맞으면 넘어짐
+//    reach     : (근접기) 명중 거리
+//  student의 이동기
+//    speed / travel : 이동 속도와 거리,  immune : 'projectile'(마법 통과) | 'all'(완전 무적)
+
+export const TIGER_MOVES = {
+  jab: {
+    label: '잽', kind: 'melee', startup: 0.07, active: 0.07, recovery: 0.12,
+    reach: 168, lunge: 90, damage: 5, hitstun: 0.24, knockback: 14, guardCost: 7, cost: 0,
+  },
+  cross: {
+    label: '크로스', kind: 'melee', startup: 0.1, active: 0.08, recovery: 0.18,
+    reach: 182, lunge: 170, damage: 8, hitstun: 0.32, knockback: 30, guardCost: 12, cost: 0,
+  },
+  claw: {
+    label: '발톱 베기', kind: 'melee', startup: 0.14, active: 0.1, recovery: 0.3,
+    reach: 180, lunge: 140, damage: 10, hitstun: 0.5, knockback: 70, guardCost: 18, cost: 8, heavy: true,
+  },
+  knee: {
+    label: '니킥', kind: 'melee', startup: 0.1, active: 0.09, recovery: 0.24,
+    reach: 158, lunge: 140, damage: 11, hitstun: 0.45, knockback: 40, guardCost: 16, cost: 14,
+  },
+  dash: {
+    label: '타이거 대시', kind: 'dash', startup: 0.05, active: 0.3, recovery: 0.16,
+    speed: 980, damage: 7, hitstun: 0.36, knockback: 60, guardCost: 14, cost: 20, immune: 'projectile',
+    reach: 120,
+  },
+  pounce: {
+    label: '도약 내려찍기', kind: 'pounce', startup: 0.14, active: 0.48, recovery: 0.3,
+    travel: 380, jump: 150, damage: 15, hitstun: 0.5, knockback: 50, guardCost: 22, cost: 24,
+    radius: 120, immune: 'projectile', heavy: true,
+  },
+  roar: {
+    label: '포효', kind: 'roar', startup: 0.18, active: 0.16, recovery: 0.34,
+    radius: 300, stunRadius: 190, stun: 0.7, damage: 3, cost: 22, superGain: 12,
+  },
+  roll: {
+    label: '구르기', kind: 'roll', startup: 0.02, active: 0.34, recovery: 0.14,
+    speed: 560, cost: 20, immune: 'all',
+  },
+  whiteTiger: {
+    label: '백호 난무', kind: 'super', startup: 0.3, active: 0.55, recovery: 0.4,
+    speed: 1150, reach: 150, damage: 42, hits: 6, hitstun: 1.0, knockback: 120, guardCost: 40, heavy: true,
+    immune: 'all',
+  },
 };
 
-// 점수 (메인 게임에 전달)
-export const SCORE = {
-  winner: 100,    // 승자 점수
-  loserMax: 80,   // 패자 최대 점수 (상대에게 준 데미지 비율)
+export const PROFESSOR_MOVES = {
+  missile: {
+    label: '매직 미사일', kind: 'cast', startup: 0.12, active: 0.02, recovery: 0.2,
+    cost: 8, projectile: { type: 'missile', speed: 840, radius: 16, height: 175, damage: 8, hitstun: 0.26, knockback: 18, guardCost: 7, life: 1.6 },
+  },
+  palm: {
+    label: '장풍 밀치기', kind: 'melee', startup: 0.08, active: 0.07, recovery: 0.2,
+    reach: 170, lunge: 60, damage: 5, hitstun: 0.26, knockback: 70, guardCost: 8, cost: 0,
+  },
+  fireball: {
+    label: '파이어볼', kind: 'cast', startup: 0.3, active: 0.02, recovery: 0.34,
+    cost: 24, projectile: { type: 'fireball', speed: 430, radius: 40, height: 120, damage: 17, hitstun: 0.55, knockback: 70, guardCost: 22, life: 3.2, heavy: true },
+  },
+  lightning: {
+    label: '낙뢰', kind: 'lightning', startup: 0.26, active: 0.02, recovery: 0.32,
+    cost: 28, delay: 0.75, width: 100, damage: 18, hitstun: 0.6, knockback: 20, guardCost: 24, heavy: true,
+  },
+  blink: {
+    label: '블링크', kind: 'blink', startup: 0.08, active: 0.04, recovery: 0.24,
+    cost: 20, distance: 340, invuln: 0.2,
+  },
+  blast: {
+    label: '아케인 폭발', kind: 'blast', startup: 0.12, active: 0.1, recovery: 0.36,
+    cost: 22, radius: 185, damage: 6, hitstun: 0.4, knockback: 520, guardCost: 10,
+  },
+  backstep: {
+    label: '백스텝', kind: 'roll', startup: 0.02, active: 0.26, recovery: 0.12,
+    speed: 430, cost: 9, immune: 'all', back: true,
+  },
+  meteor: {
+    label: '메테오', kind: 'super', startup: 0.5, active: 0.05, recovery: 0.5,
+    delay: 1.05, radius: 160, damage: 38, hitstun: 0.9, knockback: 140, guardCost: 40, heavy: true,
+    shards: 2, shardDamage: 8, shardRadius: 80,
+  },
 };
 
-// 키보드 조작 (KeyboardEvent.code 기준, 한/영 상태와 무관)
-// 한 동작에 키를 여러 개 지정할 수 있습니다.
+export const MAX_MISSILES = 3; // 동시에 날아갈 수 있는 미사일 수
+
+// ---------------- 메인 게임에 전달할 점수 ----------------
+//  점수 = 준 데미지 + 명중 수 + 이긴 라운드×25 + 최종 승리 +30
+//  승자 점수는 항상 패자보다 높음 / 무승부는 같은 점수
+export const RESULT_SCORE = { damage: 1, landed: 1, roundWin: 25, matchWin: 30 };
+
+export const CROWD = { baseHype: 0.3, hypeDecay: 0.16 };
+export const SOUND = { enabled: true, volume: 0.7 };
+
+// ---------------- 키보드 조작 ----------------
+//  공격 / 기술 버튼은 거리와 방향키에 따라 바뀝니다 (조작법 화면 참고)
+//  궁극기: 게이지가 가득 차면 사용
 export const KEY_BINDINGS = {
-  p1: {
-    left: ['KeyA'],
-    right: ['KeyD'],
-    guard: ['KeyS'],
-    punch: ['KeyF'],
-    kick: ['KeyG'],
-    special: ['KeyW'],
-  },
+  p1: { left: ['KeyA'], right: ['KeyD'], guard: ['KeyW'], dodge: ['KeyS'], attack: ['KeyF'], skill: ['KeyG'], super: ['KeyE'] },
   p2: {
-    left: ['ArrowLeft'],
-    right: ['ArrowRight'],
-    guard: ['ArrowDown'],
-    punch: ['Period', 'Numpad1'],
-    kick: ['Slash', 'Numpad2'],
-    special: ['ArrowUp'],
+    left: ['ArrowLeft'], right: ['ArrowRight'], guard: ['ArrowUp'], dodge: ['ArrowDown'],
+    attack: ['KeyK', 'Numpad1'], skill: ['KeyL', 'Numpad2'], super: ['KeyI', 'Numpad3'],
   },
 };
 
-// 화면에 보여줄 키 이름
 export const KEY_LABELS = {
-  KeyA: 'A',
-  KeyD: 'D',
-  KeyS: 'S',
-  KeyF: 'F',
-  KeyG: 'G',
-  KeyW: 'W',
-  ArrowLeft: '←',
-  ArrowRight: '→',
-  ArrowDown: '↓',
-  ArrowUp: '↑',
-  Period: '.',
-  Slash: '/',
-  Numpad1: '숫자1',
-  Numpad2: '숫자2',
+  KeyA: 'A', KeyD: 'D', KeyW: 'W', KeyS: 'S', KeyF: 'F', KeyG: 'G', KeyE: 'E',
+  KeyK: 'K', KeyL: 'L', KeyI: 'I',
+  ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓',
+  Numpad1: 'Num1', Numpad2: 'Num2', Numpad3: 'Num3',
 };
-
-// 타이틀 화면에서 게임을 시작하는 키
-export const START_KEYS = ['Space', 'Enter'];

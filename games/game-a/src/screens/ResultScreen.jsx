@@ -1,117 +1,100 @@
 // =============================================================
-//  결과 화면
-//    - 승자, 승리 방식(K.O./판정), 남은 체력, 준 데미지, 점수 표시
-//    - [다시하기]  같은 두 사람이 한 판 더
-//    - [결과 확정]  메인 게임에 결과 전달 (onConfirm)
-//  키보드: R = 다시하기, Enter = 결과 확정
+//  결과 화면 — 승자 연출 + 라운드 기록 + 메인 게임에 전달할 점수
+//  R 다시하기 · Enter 결과 확정(onFinish) · Esc 타이틀
 // =============================================================
 
-import { useEffect, useState } from 'react';
-import FighterPortrait from '../components/FighterPortrait.jsx';
-import { MATCH, PLAYERS } from '../config.js';
+import { useEffect } from 'react';
+import { PLAYERS } from '../config.js';
+import Showcase from '../ui/Showcase.jsx';
 
-const KEY_GUARD_MS = 1200; // 경기 중 누르던 키로 바로 넘어가지 않도록 잠깐 대기
+const STATS = [
+  ['준 데미지', (p) => p.damage],
+  ['명중', (p) => p.landed],
+  ['넘어뜨림', (p) => p.knockdowns],
+  ['피하기·튕겨내기', (p) => p.dodged],
+  ['막은 공격', (p) => p.blocked],
+  ['궁극기', (p) => p.supers],
+];
+const METHOD = { ko: 'K.O.', time: 'TIME', draw: 'DRAW' };
 
-const REASON_TEXT = {
-  ko: 'K.O. 승리',
-  decision: '판정승',
-  draw: '무승부',
-};
-
-function ResultCard({ player, info, score, outcome }) {
-  const pose = outcome === 'win' ? 'win' : outcome === 'lose' ? 'lose' : 'idle';
-  return (
-    <section
-      className={`bc-result-card is-${outcome}`}
-      style={{ '--p-color': player.color, '--p-deep': player.colorDeep }}
-    >
-      <div className="bc-result-badge">{outcome === 'win' ? 'WIN' : outcome === 'lose' ? 'LOSE' : 'DRAW'}</div>
-      <div className="bc-result-portrait">
-        <FighterPortrait player={player} pose={pose} facing={player.side === 'left' ? 1 : -1} />
-      </div>
-      <div className="bc-result-name">
-        <span className="bc-tag">{player.label}</span> {player.name}
-      </div>
-      <dl className="bc-result-stats">
-        <div>
-          <dt>남은 체력</dt>
-          <dd>
-            {info.hp}
-            <small>/{MATCH.maxHp}</small>
-          </dd>
-        </div>
-        <div>
-          <dt>준 데미지</dt>
-          <dd>{info.damageDealt}</dd>
-        </div>
-        <div>
-          <dt>적중</dt>
-          <dd>{info.hitsLanded}</dd>
-        </div>
-      </dl>
-      <div className="bc-result-score">
-        <b>{score}</b>점
-      </div>
-    </section>
-  );
-}
-
-export default function ResultScreen({ result, onRetry, onConfirm }) {
-  const [keysReady, setKeysReady] = useState(false);
-  const { details } = result;
+export default function ResultScreen({ result, onRetry, onConfirm, onTitle }) {
+  const { details, scores } = result;
   const winner = PLAYERS.find((p) => p.id === details.winner);
 
   useEffect(() => {
-    const timer = setTimeout(() => setKeysReady(true), KEY_GUARD_MS);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!keysReady) return undefined;
-    const onKeyDown = (e) => {
+    const onKey = (e) => {
       if (e.repeat) return;
       if (e.code === 'KeyR') onRetry();
-      if (e.code === 'Enter') onConfirm();
+      else if (e.code === 'Enter') onConfirm();
+      else if (e.code === 'Escape') onTitle();
     };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [keysReady, onRetry, onConfirm]);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onRetry, onConfirm, onTitle]);
 
-  // 카드는 P1(왼쪽), P2(오른쪽) 순서 고정 → 웹캠 위치와 같은 쪽
-  const cards = PLAYERS.map((player) => {
-    const info = details.players.find((p) => p.playerId === player.id);
-    const score = result.scores.find((s) => s.playerId === player.id).score;
-    let outcome = 'draw';
-    if (details.winner) outcome = details.winner === player.id ? 'win' : 'lose';
-    return { player, info, score, outcome };
-  });
+  const [a, b] = PLAYERS;
+  const stats = Object.fromEntries(details.players.map((p) => [p.playerId, p]));
+  const loserId = winner ? (winner.id === 'p1' ? 'p2' : 'p1') : null;
+  const states = winner ? { [winner.id]: 'win', [loserId]: 'lose' } : { p1: 'lose', p2: 'lose' };
+  const positions = winner ? { [winner.id]: winner.side === 'left' ? 600 : 1000, [loserId]: winner.side === 'left' ? 1180 : 420 } : undefined;
+  const focus = winner ? (winner.side === 'left' ? 860 : 740) : 800;
 
   return (
     <div className="bc-screen bc-result">
-      <div className="bc-title-glow" aria-hidden="true" />
-      <div className="bc-confetti" aria-hidden="true">
-        {Array.from({ length: 28 }, (_, i) => (
-          <span key={i} style={{ '--i': i, '--c': ['#ffd45e', '#ffffff', PLAYERS[0].color, PLAYERS[1].color][i % 4] }} />
-        ))}
-      </div>
-      <header className="bc-result-head">
-        <p className="bc-eyebrow">{REASON_TEXT[details.reason] ?? '경기 결과'}</p>
-        <h2 className="bc-result-title">{winner ? `${winner.label} ${winner.name} 승리!` : '무승부!'}</h2>
-      </header>
-
-      <div className="bc-result-cards">
-        {cards.map((c) => (
-          <ResultCard key={c.player.id} {...c} />
-        ))}
+      <Showcase states={states} positions={positions} focus={focus} zoom={1.02} hype={1} />
+      <div className="bc-result__hero" style={{ '--pc': winner?.color ?? '#FFD55E' }}>
+        <div className="bc-result__method">{winner ? 'VICTORY' : 'DRAW'}</div>
+        {winner && <div className="bc-result__winner">WINNER</div>}
+        <div className="bc-result__name">{winner ? winner.name : '무승부'}</div>
+        <div className="bc-result__sub">
+          {a.name} {details.wins[a.id]} : {details.wins[b.id]} {b.name}
+        </div>
       </div>
 
-      <div className="bc-result-actions">
-        <button type="button" className="bc-btn bc-btn-ghost bc-btn-wide" onClick={onRetry}>
-          ↻ 다시하기 <kbd className="bc-key">R</kbd>
-        </button>
-        <button type="button" className="bc-btn bc-btn-start bc-btn-confirm" onClick={onConfirm}>
-          결과 확정 ▶ <kbd className="bc-key">Enter</kbd>
-        </button>
+      <div className={`bc-panel bc-result__panel bc-result__panel--${winner?.side === 'right' ? 'left' : 'right'}`}>
+        <div className="bc-rounds">
+          {details.rounds.map((r, i) => {
+            const p = PLAYERS.find((x) => x.id === r.winner);
+            return (
+              <div key={i} className="bc-rounds__item" style={{ '--pc': p?.color ?? '#8d86a8' }}>
+                <span>R{i + 1}</span>
+                <b>{p ? p.name : '무승부'}</b>
+                <small>{METHOD[r.method]}{r.method === 'ko' ? ` ${r.time}s` : ''}</small>
+              </div>
+            );
+          })}
+        </div>
+        <div className="bc-stats">
+          <div className="bc-stats__row bc-stats__row--head">
+            <span style={{ color: a.color }}>{a.name}</span>
+            <span />
+            <span style={{ color: b.color }}>{b.name}</span>
+          </div>
+          {STATS.map(([label, pick]) => {
+            const va = pick(stats[a.id]);
+            const vb = pick(stats[b.id]);
+            return (
+              <div key={label} className="bc-stats__row">
+                <span className={va > vb ? 'hi' : ''}>{va}</span>
+                <span className="bc-stats__label">{label}</span>
+                <span className={vb > va ? 'hi' : ''}>{vb}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div className="bc-result__scores">
+          <span>메인 게임 점수</span>
+          {PLAYERS.map((p) => (
+            <b key={p.id} style={{ color: p.color }}>
+              {p.label} {scores.find((s) => s.playerId === p.id)?.score ?? 0}
+            </b>
+          ))}
+        </div>
+        <div className="bc-row">
+          <button type="button" className="bc-btn" onClick={onRetry}>다시하기 <small>R</small></button>
+          <button type="button" className="bc-btn bc-btn--primary" onClick={onConfirm}>결과 확정 <small>Enter</small></button>
+          <button type="button" className="bc-btn bc-btn--ghost" onClick={onTitle}>타이틀 <small>Esc</small></button>
+        </div>
       </div>
     </div>
   );

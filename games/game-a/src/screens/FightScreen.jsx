@@ -1,144 +1,151 @@
 // =============================================================
-//  경기 화면
-//    - 캔버스에 링, 관중, 선수를 그리고
-//    - 매 프레임 입력 → 경기 계산 → 그리기 → 효과음 을 반복합니다 (게임 루프)
-//    - 경기가 끝나면 결과를 onMatchEnd로 넘깁니다.
-//
-//  ※ 선수 위치처럼 매 프레임 바뀌는 값은 React state에 넣지 않습니다.
-//    (넣으면 1초에 60번 화면 전체를 다시 그려서 느려짐)
-//    화면 위 글자(HUD)만 1초에 20번 정도 갱신합니다.
+//  경기 화면 (게임 루프)
+//    매 프레임: 입력 → 엔진 → 효과음 → 그리기 → HUD
+//    Esc/P 일시정지 · M 소리
 // =============================================================
 
 import { useEffect, useRef, useState } from 'react';
-import HUD from './HUD.jsx';
-import { CONTROL_ROWS, keyText } from './controls.js';
-import { KEY_BINDINGS, PLAYERS, SOUND } from '../config.js';
-import { createMatch, updateMatch, takeEvents, PHASE } from '../engine/match.js';
-import { createRenderer } from '../engine/renderer.js';
+import { KEY_BINDINGS, PLAYERS, STAGE } from '../config.js';
+import { createMatch, takeEvents, updateMatch } from '../engine/match.js';
+import { createRenderer } from '../render/renderer.js';
+import { expressionFor } from '../render/poses.js';
 import { createKeyboardInput } from '../input/keyboardInput.js';
 import { createInputManager } from '../input/inputManager.js';
-import { createCrowdAudio } from '../audio/crowdAudio.js';
+import { createSfx } from '../audio/sfx.js';
 import { buildResult } from '../result/buildResult.js';
+import Hud from '../ui/Hud.jsx';
+import KeyCap from '../ui/KeyCap.jsx';
 
-const HUD_UPDATES_PER_SECOND = 20;
-const MAX_FRAME_TIME = 1 / 30; // 창이 잠깐 멈췄다 돌아와도 한 번에 크게 진행되지 않게
-const MUTE_KEY = 'KeyM';
-
-// 소리 켜기/끄기 상태 (다시하기를 해도 유지)
-let soundOn = SOUND.enabled;
-
-function makeHudSnapshot(match) {
-  const players = {};
+function snapshot(match) {
+  const fighters = {};
   for (const id of match.playerIds) {
     const f = match.fighters[id];
-    players[id] = { hp: f.hp, stamina: f.stamina, power: f.power, tired: f.tired > 0 };
+    fighters[id] = { hp: f.hp, res: f.res, super: f.super, expression: expressionFor(f) };
   }
   return {
     phase: match.phase,
-    introTime: match.introTime,
+    round: match.round,
     timeLeft: match.timeLeft,
-    winnerId: match.winnerId,
-    reason: match.reason,
-    players,
+    wins: { ...match.wins },
+    fighters,
+    banner: match.banner ? { ...match.banner } : null,
   };
 }
 
-export default function FightScreen({ onMatchEnd }) {
+const HINTS = {
+  tiger: [['attack', '콤보'], ['skill', '대시'], ['dodge', '구르기'], ['guard', '가드']],
+  professor: [['attack', '미사일'], ['skill', '파이어볼'], ['dodge', '백스텝'], ['guard', '방패']],
+};
+
+export default function FightScreen({ onMatchEnd, onQuit, inputSources = null }) {
   const canvasRef = useRef(null);
-  const audioRef = useRef(null);
-  const [hud, setHud] = useState(null);
-  const [soundEnabled, setSoundEnabled] = useState(soundOn);
-
-  // onMatchEnd가 바뀌어도 게임 루프를 다시 시작하지 않도록 ref에 보관
-  const onMatchEndRef = useRef(onMatchEnd);
-  onMatchEndRef.current = onMatchEnd;
-
-  const toggleSound = () => {
-    soundOn = !soundOn;
-    setSoundEnabled(soundOn);
-    audioRef.current?.setMuted(!soundOn);
-  };
-  const toggleSoundRef = useRef(toggleSound);
-  toggleSoundRef.current = toggleSound;
+  const pausedRef = useRef(false);
+  const sfxRef = useRef(null);
+  const [snap, setSnap] = useState(null);
+  const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(false);
 
   useEffect(() => {
-    const match = createMatch(PLAYERS.map((p) => p.id));
-    const renderer = createRenderer(canvasRef.current, PLAYERS);
-    const input = createInputManager([createKeyboardInput()]);
-    const audio = createCrowdAudio({ enabled: soundOn, volume: SOUND.volume });
-    audioRef.current = audio;
+    const match = createMatch();
+    const renderer = createRenderer(canvasRef.current);
+    const input = createInputManager([createKeyboardInput(), ...(inputSources ?? [])]);
+    const sfx = createSfx();
+    sfxRef.current = sfx;
+    setMuted(sfx.isMuted());
 
-    const onKeyDown = (e) => {
-      if (e.code === MUTE_KEY && !e.repeat) toggleSoundRef.current();
-    };
-    window.addEventListener('keydown', onKeyDown);
-
-    let rafId = 0;
-    let lastNow = performance.now();
-    let clock = 0;
-    let hudTimer = Infinity;
-
-    const frame = (now) => {
-      const dt = Math.min((now - lastNow) / 1000, MAX_FRAME_TIME);
-      lastNow = now;
-      clock += dt * match.timeScale;
-
-      updateMatch(match, input.read(), dt);
-      for (const event of takeEvents(match)) audio.play(event);
-      audio.update(match.hype, dt);
-      renderer.draw(match, clock);
-
-      hudTimer += dt;
-      if (hudTimer >= 1 / HUD_UPDATES_PER_SECOND) {
-        hudTimer = 0;
-        setHud(makeHudSnapshot(match));
+    let raf = 0;
+    let last = performance.now();
+    let ended = false;
+    const loop = (now) => {
+      const dt = Math.min(1 / 30, (now - last) / 1000);
+      last = now;
+      if (!pausedRef.current) {
+        updateMatch(match, input.read(), dt);
+        const events = takeEvents(match);
+        for (const ev of events) sfx.play(ev);
+        sfx.update(match.hype, dt);
+        renderer.render(match, events, dt);
+        setSnap(snapshot(match));
+      } else {
+        input.read();
       }
-
-      if (match.done) {
-        onMatchEndRef.current?.(buildResult(match));
+      if (match.done && !ended) {
+        ended = true;
+        onMatchEnd(buildResult(match));
         return;
       }
-      rafId = requestAnimationFrame(frame);
+      raf = requestAnimationFrame(loop);
     };
-    rafId = requestAnimationFrame(frame);
+    renderer.render(match, [], 0);
+    setSnap(snapshot(match));
+    raf = requestAnimationFrame(loop);
 
-    return () => {
-      cancelAnimationFrame(rafId);
-      window.removeEventListener('keydown', onKeyDown);
-      input.dispose();
-      audio.dispose();
-      audioRef.current = null;
+    const onKey = (e) => {
+      if (e.repeat) return;
+      if (e.code === 'Escape' || e.code === 'KeyP') {
+        pausedRef.current = !pausedRef.current;
+        setPaused(pausedRef.current);
+      } else if (e.code === 'KeyM') {
+        sfx.setMuted(!sfx.isMuted());
+        setMuted(sfx.isMuted());
+      }
     };
-  }, []);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('keydown', onKey);
+      input.dispose();
+      sfx.dispose();
+    };
+  }, [onMatchEnd, inputSources]);
+
+  const toggleMute = () => {
+    sfxRef.current?.setMuted(!sfxRef.current.isMuted());
+    setMuted(sfxRef.current?.isMuted() ?? false);
+  };
+  const resume = () => {
+    pausedRef.current = false;
+    setPaused(false);
+  };
 
   return (
-    <div className="bc-screen bc-fight">
-      <canvas ref={canvasRef} className="bc-canvas" />
-      {hud && <HUD hud={hud} />}
-      {hud?.phase === PHASE.INTRO && (
-        <div className="bc-fight-tip">
-          {PLAYERS.map((p) => {
-            const k = KEY_BINDINGS[p.id];
-            return (
-              <span key={p.id} style={{ '--p-color': p.color }}>
-                <b>{p.label}</b>{' '}
-                {CONTROL_ROWS.map(({ action, label }) =>
-                  action === 'move' ? `${keyText([...k.left, ...k.right])} ${label}` : `${keyText(k[action].slice(0, 1))} ${label}`,
-                ).join(' · ')}
-              </span>
-            );
-          })}
+    <div className="bc-screen">
+      <canvas ref={canvasRef} className="bc-canvas" width={STAGE.width} height={STAGE.height} />
+      {snap && <Hud snap={snap} />}
+
+      <div className="bc-hints">
+        {PLAYERS.map((p) => {
+          const k = KEY_BINDINGS[p.id];
+          return (
+            <div key={p.id} className={`bc-hints__row bc-hints__row--${p.side}`} style={{ '--pc': p.color }}>
+              <b>{p.label}</b>
+              {HINTS[p.kind].map(([key, label]) => (
+                <span key={key}>
+                  <KeyCap code={k[key][0]} />
+                  {label}
+                </span>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+      <button type="button" className="bc-icon-btn bc-icon-btn--mute" onClick={toggleMute} title="소리 (M)">
+        {muted ? '🔇' : '🔊'}
+      </button>
+
+      {paused && (
+        <div className="bc-overlay">
+          <div className="bc-panel bc-pause">
+            <h2>PAUSE</h2>
+            <button type="button" className="bc-btn bc-btn--primary" onClick={resume}>
+              계속하기 <small>Esc</small>
+            </button>
+            <button type="button" className="bc-btn" onClick={onQuit}>
+              타이틀로
+            </button>
+          </div>
         </div>
       )}
-      <button
-        type="button"
-        className="bc-sound-btn"
-        onClick={toggleSound}
-        aria-label={soundEnabled ? '소리 끄기' : '소리 켜기'}
-        title="소리 켜기/끄기 (M)"
-      >
-        {soundEnabled ? '🔊' : '🔇'} <span>M</span>
-      </button>
     </div>
   );
 }
