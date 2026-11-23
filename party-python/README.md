@@ -73,7 +73,8 @@ npm run dev
 1. `party\web` 폴더에서: `npm run build`
 2. `party\server` 폴더에서: `python -m uvicorn party.main:app --host 0.0.0.0 --port 8000`
 
-브라우저에서 `http://localhost:8000/` 을 연다. 다른 컴퓨터는 터널 주소로 접속한다.
+브라우저에서 `http://localhost:8000/` 을 연다 → 게임 첫 화면(`/party/`)으로 바로 넘어간다. 다른 컴퓨터는 터널 주소로 접속한다.
+미니게임만 골라서 해 보는 시험용 대기실은 `http://localhost:8000/index.html`.
 
 ### 다른 컴퓨터에서 접속 (Cloudflare Quick Tunnel)
 

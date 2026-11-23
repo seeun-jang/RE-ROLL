@@ -105,9 +105,10 @@ class Socket:
 
 
 async def http_get(app, path: str) -> tuple[int, dict, bytes]:
+    path, _, query = path.partition("?")
     scope = {
         "type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1", "method": "GET", "scheme": "http",
-        "path": path, "raw_path": path.encode(), "root_path": "", "query_string": b"", "headers": [],
+        "path": path, "raw_path": path.encode(), "root_path": "", "query_string": query.encode(), "headers": [],
         "client": ("testclient", 50000), "server": ("testserver", 80), "state": {},
     }
     events = []
@@ -206,3 +207,20 @@ def test_party_info_and_static_files(monkeypatch):
         assert status == 200 and b"export const BOARD" in body
 
     asyncio.run(main())
+
+
+def test_home_address_opens_the_game():
+    """서버 주소만 열면 게임 첫 화면(/party/)으로 가고, 미니게임 끼워 넣기 주소(?embed=…)는 그대로 열린다."""
+    main = pytest.importorskip("party.main")
+    if not main.DIST_DIR.is_dir():
+        pytest.skip("web/dist 가 없다 (npm run build 전)")
+
+    async def run():
+        status, headers, _ = await http_get(main.app, "/")
+        assert status in (302, 307) and headers["location"] == "/party/"
+        status, _, body = await http_get(main.app, "/?embed=1&local=3&game=tug")
+        assert status == 200 and b"<html" in body.lower()
+        status, _, body = await http_get(main.app, "/index.html")     # 시험용 대기실
+        assert status == 200 and b"<html" in body.lower()
+
+    asyncio.run(run())

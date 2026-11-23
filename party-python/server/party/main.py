@@ -15,8 +15,8 @@ import json
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from .board import BoardManager, attach_board
@@ -100,6 +100,18 @@ async def ws_endpoint(websocket: WebSocket) -> None:
 attach_board(app, board)
 
 if DIST_DIR.is_dir():
+
+    @app.get("/", include_in_schema=False)
+    async def home(request: Request):
+        """주소만 열면(https://서버주소/) 바로 게임 첫 화면(/party/)으로 보낸다 → 링크 하나로 게임이 열린다.
+
+        '?embed=1…' 처럼 뒤에 값이 붙은 주소는 보드게임이 미니게임 화면을 끼워 넣을 때 쓰는 것이라 그대로 둔다.
+        미니게임만 골라 하는 시험용 대기실은 /index.html 로 연다.
+        """
+        if request.url.query:
+            return FileResponse(DIST_DIR / "index.html")
+        return RedirectResponse("/party/")
+
     # 화면 파일은 맨 마지막에 붙인다(/api, /ws 가 먼저 처리되도록)
     app.mount("/", StaticFiles(directory=str(DIST_DIR), html=True), name="web")
 else:
