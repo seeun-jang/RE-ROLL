@@ -16,6 +16,6 @@ services:
       # Gemini 키는 여기에 적지 않는다 — Render 화면에서 직접 넣는다 (sync: false)
       - key: GEMINI_API_KEY
         sync: false
-      # 음성 인식(Whisper)은 무료 서버 메모리에 안 들어가서 끈다
+      # 음성 인식: Whisper 모델은 무료 서버 메모리에 안 들어가서, 녹음한 소리를 Gemini 로 받아 적는다
       - key: PARTY_STT
-        value: "off"
+        value: "gemini"

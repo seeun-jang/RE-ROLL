@@ -140,6 +140,8 @@ python tools\check_ai.py
 - 처음 실행할 때 모델(약 1.6GB, `openai/whisper-large-v3-turbo`)을 내려받는다. 무료이고 계정이 필요 없다.
 - 그래픽카드가 없으면 자동으로 작은 모델(`openai/whisper-small`)을 CPU 로 돌린다. 모델을 바꾸려면 `PARTY_STT_MODEL` 환경 변수.
 - 설치하지 않았거나 `PARTY_STT=off` 이면 음성 없이 타자 입력으로만 진행된다.
+- **Whisper 를 설치하지 않았어도 `GEMINI_API_KEY` 가 있으면 음성 인식이 된다.** 녹음한 소리를 Gemini 에 보내 받아 적는 방식으로 자동 전환된다
+  (`PARTY_STT=gemini` 로 직접 고를 수도 있다). 모델을 내려받지 않아 클라우드 무료 서버에서도 된다. 한 번에 2~6초.
 - 마이크는 브라우저 규칙상 `localhost` 또는 `https` 주소에서만 켜진다. 다른 컴퓨터는 Cloudflare 터널 주소(https)로 들어와야 한다.
 
 ### Gemini 문제 생성 켜기

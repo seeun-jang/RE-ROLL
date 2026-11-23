@@ -25,8 +25,9 @@ COPY server/ server/
 COPY board/ board/
 COPY --from=web /app/web/dist web/dist
 
-# 음성 인식(Whisper)은 용량 · 메모리가 커서 클라우드 무료 서버에서는 끈다 → 음성 게임은 타자 입력 · 간단한 채점으로 진행
-ENV PYTHONUTF8=1 PYTHONUNBUFFERED=1 PARTY_STT=off
+# 음성 인식: Whisper 모델(1.6GB)은 클라우드 무료 서버에 못 올리므로, 녹음한 소리를 Gemini 에 보내 받아 적는다.
+# (GEMINI_API_KEY 가 없으면 음성 인식이 꺼지고 타자 입력으로 진행된다)
+ENV PYTHONUTF8=1 PYTHONUNBUFFERED=1 PARTY_STT=gemini
 WORKDIR /app/server
 # 클라우드가 정해 주는 포트(PORT)로 켠다. 없으면 8000.
 CMD ["sh", "-c", "uvicorn party.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

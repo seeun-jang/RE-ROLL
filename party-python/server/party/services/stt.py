@@ -1,4 +1,8 @@
-"""음성 인식(STT) 서비스 — Hugging Face 의 Whisper 모델을 서버 PC 에서 직접 돌린다.
+"""음성 인식(STT) 서비스.
+
+두 가지 방식이 있다.
+  - whisper : Hugging Face 의 Whisper 모델을 서버 PC 에서 직접 돌린다 (GPU 가 있는 내 컴퓨터용. 모델 1.6GB)
+  - gemini  : 녹음한 소리를 Gemini API 에 보내 받아 적게 한다 (모델을 내려받지 않아도 되므로 클라우드 무료 서버용)
 
     stt = create_stt()                     # 서버 시작 때 한 번. 모델은 뒤에서(스레드) 불러온다.
     stt.status                             # 'loading' | 'ready' | 'off' | 'error'
@@ -10,18 +14,22 @@
                                            #   Whisper 인코더가 소리를 요약한 값이다(소리 따라하기 채점에 쓴다).
 
 환경 변수
-    PARTY_STT        whisper(기본) | off | fake
+    PARTY_STT        whisper(기본) | gemini | off | fake
+                     whisper 인데 필요한 패키지(torch 등)가 없으면, Gemini 키가 있을 때 자동으로 gemini 방식을 쓴다.
     PARTY_STT_MODEL  Hugging Face 모델 이름. 기본: GPU 가 있으면 openai/whisper-large-v3-turbo, 없으면 openai/whisper-small
     PARTY_STT_FAKE_TEXT  fake 일 때 돌려줄 문장(검증용)
 
-필요한 패키지(torch, transformers, numpy)가 없으면 status 가 'off' 가 되고,
+Whisper 에 필요한 패키지(torch, transformers, numpy)도 없고 Gemini 키도 없으면 status 가 'off' 가 되고,
 게임은 음성 없이(타자 입력만) 진행된다. 설치 방법은 server/requirements-ai.txt 참고.
 """
 
 from __future__ import annotations
 
+import base64
+import io
 import os
 import threading
+import wave
 from array import array
 from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Callable
@@ -54,10 +62,13 @@ def rms_of(pcm: bytes) -> float:
 class SttService:
     """인식기(backend)를 감싸 스레드에서 돌리는 공통 틀."""
 
-    def __init__(self, loader: Callable[[], object] | None, name: str = "off"):
+    def __init__(self, loader: Callable[[], object] | None, name: str = "off",
+                 fallback: tuple[Callable[[], object], str] | None = None):
         """loader: 호출하면 모델을 불러와 `transcribe(pcm16, rate) -> str` 함수를 돌려준다.
-        `(transcribe, encode)` 쌍을 돌려주면 특징 벡터 뽑기(encode(pcm16, rate) -> 배열)도 쓸 수 있다."""
+        `(transcribe, encode)` 쌍을 돌려주면 특징 벡터 뽑기(encode(pcm16, rate) -> 배열)도 쓸 수 있다.
+        fallback: (loader, 이름) — loader 에 필요한 패키지가 없을 때 대신 쓸 방식."""
         self.name = name
+        self._fallback = fallback
         self.status = "off" if loader is None else "loading"
         self.detail = ""
         self._transcribe: Callable[[bytes, int], str] | None = None
@@ -76,6 +87,12 @@ class SttService:
             self.status = "ready"
             print(f"[음성 인식] 준비 완료 ({self.name}) {self.detail}", flush=True)
         except ImportError as exc:
+            if self._fallback is not None:
+                # Whisper 를 돌릴 패키지가 없다 → 준비해 둔 다른 방식(Gemini)으로 바꿔서 다시 불러온다
+                loader, self.name = self._fallback
+                self._fallback = None
+                print(f"[음성 인식] {exc} → {self.name} 방식으로 바꿉니다.", flush=True)
+                return self._load(loader)
             self.status = "off"
             self.detail = f"패키지 없음: {exc}"
             print(f"[음성 인식] 꺼짐 — 필요한 패키지가 없습니다({exc}). server/requirements-ai.txt 를 참고하세요.", flush=True)
@@ -186,7 +203,43 @@ def _whisper_loader(service_ref: list):
     return transcribe, encode
 
 
-def create_stt() -> SttService:
+# ----------------------------------------------------------------------
+# Gemini (녹음한 소리를 API 로 보내 받아 적기 — 멀티모달 입력)
+# ----------------------------------------------------------------------
+GEMINI_STT_SYSTEM = (
+    "너는 음성 받아쓰기 도구다. 오디오에서 사람이 말한 한국어를 들리는 그대로 받아 적는다.\n"
+    "- 설명 · 번역 · 따옴표 · 문장부호를 덧붙이지 않는다.\n"
+    "- 사람 말소리가 없거나 알아들을 수 없으면 빈 문자열을 돌려준다. 내용을 지어내지 않는다."
+)
+GEMINI_STT_SCHEMA = {"type": "OBJECT", "properties": {"text": {"type": "STRING"}}, "required": ["text"]}
+
+
+def pcm16_to_wav(pcm16: bytes, rate: int) -> bytes:
+    """날것의 16비트 PCM 에 WAV 머리말을 붙인다 (Gemini 는 파일 형식이 있는 소리만 받는다)."""
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(pcm16[: len(pcm16) // 2 * 2])
+    return buf.getvalue()
+
+
+def _gemini_loader(gemini):
+    """Gemini 로 받아 적는 transcribe 함수를 만든다. 특징 벡터(encode)는 없다 → 소리 따라하기는 간단 채점."""
+
+    def transcribe(pcm16: bytes, rate: int) -> str:
+        if rms_of(pcm16) < 0.003:      # 거의 무음이면 API 를 부르지 않는다 (무료 한도 아끼기)
+            return ""
+        audio = {"mime_type": "audio/wav", "data": base64.b64encode(pcm16_to_wav(pcm16, rate)).decode("ascii")}
+        data = gemini.generate_json("이 오디오를 받아 적어라.", GEMINI_STT_SCHEMA, 0.0, [audio], GEMINI_STT_SYSTEM)
+        return str(data.get("text", "")) if isinstance(data, dict) else ""
+
+    return transcribe
+
+
+def create_stt(gemini=None) -> SttService:
+    """gemini: GeminiClient (없으면 None). PARTY_STT=gemini 이거나 Whisper 를 못 쓸 때 받아쓰기에 쓴다."""
     kind = (os.environ.get("PARTY_STT") or "whisper").strip().lower()
     if kind in ("off", "0", "none", "no"):
         print("[음성 인식] 꺼짐 (PARTY_STT=off)", flush=True)
@@ -194,7 +247,13 @@ def create_stt() -> SttService:
     if kind == "fake":
         text = os.environ.get("PARTY_STT_FAKE_TEXT", "")
         return SttService(lambda: (lambda _pcm, _rate: text), "fake")
+    if kind == "gemini":
+        if gemini is None:
+            print("[음성 인식] 꺼짐 — PARTY_STT=gemini 인데 GEMINI_API_KEY 가 없습니다.", flush=True)
+            return SttService(None, "off")
+        return SttService(lambda: _gemini_loader(gemini), "gemini")
     ref: list = []
-    service = SttService(lambda: _whisper_loader(ref), "whisper")
+    fallback = ((lambda: _gemini_loader(gemini)), "gemini") if gemini is not None else None
+    service = SttService(lambda: _whisper_loader(ref), "whisper", fallback=fallback)
     ref.append(service)
     return service

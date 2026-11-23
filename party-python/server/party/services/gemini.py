@@ -50,6 +50,7 @@ class GeminiClient:
         """프롬프트를 보내고 JSON 으로 답을 받는다. 모든 후보 모델이 실패하면 GeminiError.
 
         images: [{"mime_type": "image/png", "data": "<base64>"}] — 글과 함께 보낼 사진(멀티모달).
+                소리도 같은 방식으로 보낸다: {"mime_type": "audio/wav", "data": "<base64>"} (음성 받아쓰기).
         system: 시스템 프롬프트(역할 · 규칙).
         """
         config: dict = {"responseMimeType": "application/json", "temperature": temperature}

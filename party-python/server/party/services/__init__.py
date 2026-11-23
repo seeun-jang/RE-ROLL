@@ -12,7 +12,9 @@ from .stt import SttService, create_stt
 
 def create_services() -> dict:
     """실제 서버용 서비스 묶음. 환경 변수로 켜고 끈다(README 참고)."""
-    return {"stt": create_stt(), "gemini": GeminiClient.from_env()}
+    gemini = GeminiClient.from_env()
+    # 음성 인식은 Whisper 가 기본이고, Whisper 를 못 쓰는 곳(클라우드 무료 서버)에서는 Gemini 로 받아 적는다
+    return {"stt": create_stt(gemini), "gemini": gemini}
 
 
 __all__ = ["GeminiClient", "SttService", "create_stt", "create_services"]
