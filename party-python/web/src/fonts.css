@@ -1,0 +1,22 @@
+/* Galmuri 픽셀 폰트 (© Lee Minseo, SIL Open Font License 1.1)
+   npm 패키지에서 불러와 함께 빌드한다 → 인터넷(CDN) 없이도 표시된다. */
+@font-face {
+  font-family: Galmuri7;
+  src: url('../node_modules/galmuri/dist/Galmuri7.woff2') format('woff2');
+  font-display: block;
+}
+@font-face {
+  font-family: Galmuri9;
+  src: url('../node_modules/galmuri/dist/Galmuri9.woff2') format('woff2');
+  font-display: block;
+}
+@font-face {
+  font-family: Galmuri11;
+  src: url('../node_modules/galmuri/dist/Galmuri11.woff2') format('woff2');
+  font-display: block;
+}
+@font-face {
+  font-family: Galmuri14;
+  src: url('../node_modules/galmuri/dist/Galmuri14.woff2') format('woff2');
+  font-display: block;
+}

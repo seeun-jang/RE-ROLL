@@ -1,0 +1,15 @@
+{
+  "name": "reroll-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RE:ROLL 미니게임 연결 서버 (같은 와이파이에서 컴퓨터 여러 대로 차례대로 플레이 + 관전)",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "share": "node share.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

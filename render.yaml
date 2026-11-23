@@ -1,0 +1,21 @@
+# Render 배포 설정 (Blueprint) — 깃허브 저장소를 연결하면 이대로 서버 하나가 만들어진다.
+# 올리는 순서와 주의할 점: party-python/docs/deploy.md
+#
+# party-python 의 Python 서버(FastAPI)를 Docker 로 올린다:
+#   미니게임 20개 + 보드게임 + 보스전 + Gemini AI 해설. 게임 주소는 https://<서비스 주소>/party/
+# 무료 요금제: 15분 동안 아무도 안 쓰면 잠들고, 다음 접속 때 1분쯤 걸려 깨어난다.
+services:
+  - type: web
+    name: reroll-party
+    runtime: docker
+    plan: free
+    dockerfilePath: ./party-python/Dockerfile
+    dockerContext: ./party-python
+    healthCheckPath: /_party/status
+    envVars:
+      # Gemini 키는 여기에 적지 않는다 — Render 화면에서 직접 넣는다 (sync: false)
+      - key: GEMINI_API_KEY
+        sync: false
+      # 음성 인식: Whisper 모델은 무료 서버 메모리에 안 들어가서, 녹음한 소리를 Gemini 로 받아 적는다
+      - key: PARTY_STT
+        value: "gemini"

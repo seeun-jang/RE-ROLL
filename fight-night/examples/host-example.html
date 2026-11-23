@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>RE:ROLL 메인 게임 연동 예시</title>
+  <style>
+    body { background: #120a1c; color: #fff4c8; font-family: sans-serif; margin: 16px; }
+    iframe { border: 0; width: 960px; height: 540px; max-width: 100%; background: #000; }
+    pre { background: #1a1028; padding: 12px; max-width: 960px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h3>메인 게임이 미니게임을 띄우고 결과를 받는 예시</h3>
+  <!-- 미니게임 20개 중 하나를 iframe 으로 실행 (embed=1 이면 결과 화면에서 멈춤) -->
+  <iframe id="mini" src="../index.html?mode=tournament&players=5&autostart=1&embed=1"></iframe>
+  <p>누적 점수 (미니게임 순위 점수 합산)</p>
+  <pre id="total">아직 결과 없음</pre>
+  <pre id="log"></pre>
+  <script>
+    // 메인 게임의 누적 점수판
+    const total = { bear: 0, cat: 0, duck: 0, tiger: 0, shiba: 0 };
+
+    window.addEventListener('message', (e) => {
+      if (!e.data || e.data.type !== 'RE_MINIGAME_RESULT') return;
+      const result = e.data.result;
+      // 순위 점수를 누적
+      result.ranking.forEach((r) => { total[r.playerId] += r.rankPoints; });
+      document.getElementById('log').textContent = JSON.stringify(result, null, 2);
+      const sorted = Object.entries(total).sort((a, b) => b[1] - a[1]);
+      document.getElementById('total').textContent =
+        sorted.map(([id, pt], i) => `${i + 1}위 ${id}: ${pt}점`).join('\n') +
+        `\n\n→ 최종 1위(${sorted[0][0]})가 보스전 진출`;
+    });
+  </script>
+</body>
+</html>

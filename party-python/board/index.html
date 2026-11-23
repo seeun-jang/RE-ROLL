@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RE:ROLL 파티</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="stage">
+    <!-- 메인 · 대기실 배경: 열쇠 그림을 픽셀로 -->
+    <canvas id="keyart" class="keyart"></canvas>
+
+    <!-- 1) 메인 화면: 처음에는 "시작하려면 터치하세요"만 → 인트로가 끝나면 팀 코드 입력 -->
+    <section id="scr-title" class="screen">
+      <div id="touch" class="touch">✦ 시작하려면 터치하세요 ✦</div>
+      <div id="entry" class="panel title-panel hidden">
+        <div class="panel-ttl">🎲 팀코드로 방 입장</div>
+        <label>내 이름</label>
+        <input id="in-name" maxlength="8" placeholder="최대 8글자" autocomplete="off" />
+        <div class="row">
+          <button id="btn-create" class="btn gold">방 만들기</button>
+        </div>
+        <div class="row">
+          <input id="in-code" maxlength="6" inputmode="numeric" placeholder="팀 코드 6자리" autocomplete="off" />
+          <button id="btn-join" class="btn">방 입장</button>
+        </div>
+        <div id="title-msg" class="msg"></div>
+      </div>
+      <div id="conn" class="conn">서버 연결 중…</div>
+    </section>
+
+    <!-- 2) 인트로 영상 (SKIP 가능). assets/intro.mp4 가 있으면 그 영상, 없으면 그림 4장 -->
+    <section id="scr-intro" class="screen hidden">
+      <canvas id="intro-cv" class="scene"></canvas>
+      <div class="intro-cap"><b id="intro-ttl"></b><span id="intro-txt"></span></div>
+      <div id="intro-dots" class="intro-dots"></div>
+      <button id="btn-skip" class="btn skip">▶▶ SKIP</button>
+    </section>
+
+    <!-- 3) 팀 대기실 -->
+    <section id="scr-lobby" class="screen hidden">
+      <div class="lobby-head">
+        <div id="lobby-ttl">팀 대기실</div>
+        <div class="panel code-box"><b id="lobby-code" class="code">----</b></div>
+        <div class="hint">팀 코드를 친구에게 알려주세요 · 흐린 캐릭터를 누르면 내 캐릭터가 바뀌어요 · 남는 캐릭터는 CPU</div>
+        <div id="lobby-url" class="share-url"></div>
+      </div>
+      <div id="seats" class="seats"></div>
+      <div class="lobby-foot">
+        <div id="turn-pick" class="turn-pick"></div>
+        <div id="lobby-action"></div>
+        <button id="btn-leave" class="btn dim">나가기</button>
+      </div>
+    </section>
+
+    <!-- 4) 게임 진행 (보드) -->
+    <section id="scr-game" class="screen hidden">
+      <canvas id="board"></canvas>
+      <div id="hud-top" class="hud-top"></div>
+      <div id="rankbox" class="rankbox"></div>
+      <div class="map-box">
+        <canvas id="minimap" class="minimap" title="누르면 그곳으로"></canvas>
+        <button id="btn-map" class="btn map-btn">🗺️ 전체 지도 (Z)</button>
+      </div>
+      <div id="tip" class="tip hidden"></div>
+      <div id="cards" class="cards"></div>
+      <div id="log" class="log"></div>
+      <div id="prompt" class="prompt hidden"></div>
+      <div id="toasts" class="toasts"></div>
+      <div id="big" class="big hidden"></div>
+      <div id="mgresult" class="overlay hidden"></div>
+      <div id="end" class="overlay hidden"></div>
+      <!-- 보스전: 최종 1위 vs 마법사 -->
+      <div id="boss" class="overlay boss hidden"></div>
+      <!-- 6 · 7) 굿엔딩 / 배드엔딩 -->
+      <div id="ending" class="ending hidden">
+        <canvas id="ending-cv" class="scene"></canvas>
+        <div id="ending-body" class="ending-body"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 인트로 · 엔딩 영상 (화면 전체). 확대 처리되는 #stage 밖에 둬야 브라우저가 영상을 가장 매끄럽게 그린다 -->
+  <section id="film" class="film hidden">
+    <video id="intro-video" playsinline preload="auto"></video>
+    <div id="film-loading" class="film-loading hidden">영상 불러오는 중…</div>
+    <button id="btn-skip-film" class="btn skip">▶▶ SKIP</button>
+  </section>
+
+  <!-- 미니게임 (화면 전체) -->
+  <section id="mg" class="mg hidden">
+    <div id="mg-intro" class="mg-intro"></div>
+    <iframe id="mg-frame" allow="camera *; microphone *; autoplay *; fullscreen *" class="hidden"></iframe>
+    <div id="mg-wait" class="mg-wait hidden"></div>
+  </section>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

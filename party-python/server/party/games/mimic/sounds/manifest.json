@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "sounds": [
+    {
+      "id": "beep",
+      "name": "삐-",
+      "difficulty": "easy",
+      "icon": "speaker",
+      "file": "beep.wav",
+      "duration": 1.2,
+      "license": "CC0 (procedurally generated)",
+      "source": "sound_generator.py"
+    },
+    {
+      "id": "dingdong",
+      "name": "띵동",
+      "difficulty": "easy",
+      "icon": "bell",
+      "file": "dingdong.wav",
+      "duration": 1.65,
+      "license": "CC0 (procedurally generated)",
+      "source": "sound_generator.py"
+    },
+    {
+      "id": "hum_up",
+      "name": "올라가는 음",
+      "difficulty": "easy",
+      "icon": "note",
+      "file": "hum_up.wav",
+      "duration": 2.0,
+      "license": "CC0 (procedurally generated)",
+      "source": "sound_generator.py"
+    },
+    {
+      "id": "meow",
+      "name": "야옹",
+      "difficulty": "normal",
+      "icon": "cat",
+      "file": "meow.wav",
+      "duration": 1.1,
+      "license": "CC0 (procedurally generated)",
+      "source": "sound_generator.py"
+    },
+    {
+      "id": "cuckoo",
+      "name": "뻐꾸기",
+      "difficulty": "normal",
+      "icon": "bird",
+      "file": "cuckoo.wav",
+      "duration": 1.46,
+      "license": "CC0 (procedurally generated)",
+      "source": "sound_generator.py"
+    },
+    {
+      "id": "whistle_up",
+      "name": "상승 휘파람",
+      "difficulty": "normal",
+      "icon": "whistle",
+      "file": "whistle_up.wav",
+      "duration": 1.2,
+      "license": "CC0 (procedurally generated)",
+      "source": "sound_generator.py"
+    },
+    {
+      "id": "siren",
+      "name": "사이렌",
+      "difficulty": "hard",
+      "icon": "siren",
+      "file": "siren.wav",
+      "duration": 2.6,
+      "license": "CC0 (procedurally generated)",
+      "source": "sound_generator.py"
+    },
+    {
+      "id": "melody",
+      "name": "멜로디",
+      "difficulty": "hard",
+      "icon": "note",
+      "file": "melody.wav",
+      "duration": 1.99,
+      "license": "CC0 (procedurally generated)",
+      "source": "sound_generator.py"
+    },
+    {
+      "id": "rhythm",
+      "name": "빰빰빠바밤",
+      "difficulty": "hard",
+      "icon": "drum",
+      "file": "rhythm.wav",
+      "duration": 1.62,
+      "license": "CC0 (procedurally generated)",
+      "source": "sound_generator.py"
+    }
+  ]
+}
