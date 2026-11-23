@@ -6,7 +6,7 @@
 // =====================================================
 import { DICE, SPACES, CHARACTERS, TURN_CHOICES, MAX_PLAYERS } from './shared/rules.js';
 import { BoardView, spriteUrl } from './board-view.js';
-import { playIntro, animate, drawGoodEnding, drawBadEnding } from './story.js';
+import { playIntro, playEndingFilm, animate, drawGoodEnding, drawBadEnding } from './story.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -75,7 +75,9 @@ function connect() {
     setTimeout(connect, 1500);
   };
 }
-const sendMsg = (m) => { if (ws && ws.readyState === 1) ws.send(JSON.stringify(m)); };
+// demoSend 가 있으면(?demo=boss-play 시연) 서버 대신 그 함수가 메시지를 받는다
+let demoSend = null;
+const sendMsg = (m) => { if (demoSend) return demoSend(m); if (ws && ws.readyState === 1) ws.send(JSON.stringify(m)); };
 
 // ---------------- 메인 화면 ----------------
 // 이 탭에서 정한 이름이 먼저 (한 컴퓨터에서 탭 여러 개로 시험할 때 섞이지 않게)
@@ -513,6 +515,8 @@ const rankRows = () => room.ranking.map((x) => `
   <span class="nm">${esc(x.name)}${x.cpu ? ' <small style="color:var(--sub)">CPU</small>' : ''}</span><span class="sc">${pts(x.score)}점</span></div>`).join('');
 
 let stopEnding = null, endingShown = null;
+// 엔딩 영상(해피 · 배드)은 한 판에 한 번만 튼다. 영상이 끝나면 그 뒤에 엔딩 화면(순위 · 버튼)이 보인다.
+let endingFilmFor = null, stopEndingFilm = null;
 function renderEnd() {
   const el = $('end'), ending = $('ending');
   const host = room.host === myId;
@@ -525,6 +529,16 @@ function renderEnd() {
   // 엔딩 그림은 한 번만 켠다 (상태가 올 때마다 다시 그리면 깜빡임)
   const showEnding = room.phase === 'end' && room.ranking && (room.ending === 'good' || room.ending === 'bad');
   if (!showEnding && stopEnding) { stopEnding(); stopEnding = null; endingShown = null; }
+  if (!showEnding) {
+    if (stopEndingFilm) { stopEndingFilm(); stopEndingFilm = null; }
+    endingFilmFor = null;
+  } else if (endingFilmFor !== room.ending) {
+    endingFilmFor = room.ending;
+    if (stopEndingFilm) stopEndingFilm();
+    stopEndingFilm = playEndingFilm(
+      { film: $('film'), video: $('intro-video'), filmSkip: $('btn-skip-film'), loading: $('film-loading') },
+      room.ending, () => { stopEndingFilm = null; });
+  }
   ending.classList.toggle('hidden', !showEnding);
 
   if (room.phase === 'play' && room.step === 'final' && room.ranking) {
@@ -588,23 +602,108 @@ function renderBoss() {
 }
 
 // ---------------- 화면 미리 보기 (발표 · 확인용) ----------------
-// 주소 끝에 ?demo=good | bad | boss | final 을 붙이면 서버 없이 그 화면만 바로 보여 준다.
-//   예) http://localhost:8000/party/?demo=good  → 굿엔딩 화면
+// 주소 끝에 ?demo=… 를 붙이면 서버 없이 그 화면만 바로 보여 준다.
+//   good · bad            굿엔딩 · 배드엔딩 (영상 → 엔딩 화면)
+//   final                 최종 랭킹 ("보스전 진출!")
+//   boss-intro            보스전 시작
+//   boss-roll             내가 주사위를 멈추는 순간
+//   boss-cheer            동료가 응원하는 순간
+//   boss (= boss-win)     한 판을 이겼을 때
+//   boss-tie · boss-lose  비겼을 때(RE:ROLL) · 졌을 때
+//   boss-play             보스전을 처음부터 끝까지 직접 해 보기 (시연 · 녹화용, 서버 판정을 흉내 냄)
+//   예) http://localhost:8000/party/?demo=boss-roll
+const DEMOS = ['good', 'bad', 'final', 'boss', 'boss-intro', 'boss-roll', 'boss-cheer', 'boss-win', 'boss-tie', 'boss-lose'];
 function demoRoom(kind) {
   const names = ['지호', '성원', '민지', '태윤', '하린'], scores = [2330, 1890, 1770, 1380, 1060];
   const players = names.map((name, i) => ({ id: i + 1, name, cpu: false, online: true, seat: i, node: 30 - i * 4, dist: 20 + i * 5,
     bag: [], flags: { skip: 0, mirror: false, shield: false, rest: false }, score: scores[i], ready: true }));
   const ranking = players.map((p, i) => ({ id: p.id, name: p.name, cpu: false, seat: p.seat, dist: p.dist, score: p.score, over: -1, rank: i + 1 }));
   const end = kind === 'good' || kind === 'bad';
-  const boss = { hero: 1, round: end ? 3 : 2, heroWins: kind === 'bad' ? 0 : end ? 2 : 1, wizWins: kind === 'bad' ? 2 : end ? 1 : 0,
-    stage: end ? 'done' : 'reveal', need: 2, bonus: 2, lineSource: 'canned',
-    last: end ? null : { round: 2, heroDie: 8, cheers: 3, heroTotal: 11, wizardDie: 6, wizardTotal: 8, winner: 'hero' },
-    line: kind === 'good' ? '크윽… 저주가… 풀리고 있어…!' : kind === 'bad' ? '…좋아. 다음 판도 준비해 두지.' : '이, 이럴 리가 없는데…!' };
-  return { t: 'room', code: '123456', phase: end ? 'end' : 'play', step: end ? null : kind === 'boss' ? 'boss' : 'final', turn: 10, maxTurns: 10, host: 1,
-    players, prompts: [], rolls: {}, mg: null, mgResult: null, log: [], ranking, boss: kind === 'final' ? null : boss, ending: end ? kind : null };
+  const base = { t: 'room', code: '123456', phase: end ? 'end' : 'play', step: end ? null : kind === 'final' ? 'final' : 'boss', turn: 10, maxTurns: 10, host: 1,
+    players, prompts: [], rolls: {}, mg: null, mgResult: null, log: [], ranking, boss: null, ending: end ? kind : null };
+  if (kind === 'final') return base;
+  const boss = { hero: 1, round: 1, heroWins: 0, wizWins: 0, stage: 'reveal', need: 2, bonus: 2, lineSource: 'gemini', last: null, line: '' };
+  const round = (heroDie, cheers, wizardDie) => {
+    const heroTotal = heroDie + cheers, wizardTotal = wizardDie + 2;
+    return { round: boss.round, heroDie, cheers, heroTotal, wizardDie, wizardTotal, winner: heroTotal > wizardTotal ? 'hero' : heroTotal < wizardTotal ? 'wizard' : 'tie' };
+  };
+  const deadline = Date.now() + 6000;
+  if (kind === 'good') Object.assign(boss, { round: 3, heroWins: 2, wizWins: 1, stage: 'done', line: '크윽… 저주가… 풀리고 있어…!' });
+  else if (kind === 'bad') Object.assign(boss, { round: 2, wizWins: 2, stage: 'done', line: '…좋아. 다음 판도 준비해 두지.' });
+  else if (kind === 'boss-intro') Object.assign(boss, { round: 0, stage: 'intro', line: '지호, 여기까지 오다니 제법이군요.' });
+  else if (kind === 'boss-roll') {
+    Object.assign(boss, { stage: 'roll', line: '어서 굴려 보시죠. 결과는 정해져 있지만.' });
+    base.prompts = [{ id: 1, pid: 1, kind: 'timing', title: '주사위를 멈춰라! (1~10)', options: [], deadline, meta: { boss: true } }];
+  } else if (kind === 'boss-cheer') {
+    myId = 2; board.myId = 2;   // 동료(성원)의 화면
+    Object.assign(boss, { stage: 'roll', line: '어서 굴려 보시죠. 결과는 정해져 있지만.' });
+    base.prompts = [{ id: 2, pid: 2, kind: 'cheer', title: '지호 응원하기! (+1)', options: [{ value: 1, label: '힘내라!', icon: '📣' }], deadline, meta: { boss: true } }];
+  } else if (kind === 'boss-tie') Object.assign(boss, { round: 2, heroWins: 1, last: null, line: '비겼군요. RE:ROLL 입니다.' }, { last: { round: 2, heroDie: 5, cheers: 2, heroTotal: 7, wizardDie: 5, wizardTotal: 7, winner: 'tie' } });
+  else if (kind === 'boss-lose') Object.assign(boss, { round: 2, heroWins: 1, wizWins: 1, line: '후후, 주사위는 정직하군요.', last: { round: 2, heroDie: 3, cheers: 1, heroTotal: 4, wizardDie: 9, wizardTotal: 11, winner: 'wizard' } });
+  else { boss.round = 2; boss.heroWins = 2; boss.wizWins = 0; boss.line = '이, 이럴 리가 없는데…!'; boss.last = round(8, 3, 6); }   // boss · boss-win
+  base.boss = boss;
+  return base;
 }
+// 보스전 시연: 서버(story.py 의 boss_battle)가 하는 일을 화면에서 그대로 흉내 낸다.
+// 내가 최종 1위 '지호'가 되어 Space 로 주사위를 멈추고, 동료 4명의 응원과 마법사 주사위는 랜덤.
+async function demoBossPlay() {
+  const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+  const rand = (n) => Math.floor(Math.random() * n);
+  const pick = (arr) => arr[rand(arr.length)];
+  const LINES = {
+    intro: ['지호, 여기까지 오다니 제법이군요.', '어서 오시죠 지호. 주사위는 준비됐습니까?'],
+    wizard: ['후후, 주사위는 정직하군요.', '이 정도입니까? 실망입니다.'],
+    hero: ['이, 이럴 리가 없는데…!', '지호… 운이 좋았을 뿐입니다.'],
+    tie: ['비겼군요. RE:ROLL 입니다.', '다시 굴리시죠. 결과는 같겠지만.'],
+    good: ['크윽… 저주가… 풀리고 있어…!'], bad: ['…좋아. 다음 판도 준비해 두지.'],
+  };
+  const state = demoRoom('boss-intro');
+  const b = state.boss;
+  b.lineSource = 'canned';
+  b.line = pick(LINES.intro);
+  const push = () => onRoom(structuredClone(state));
+  let waiting = null;   // { id, resolve } — 지금 기다리는 대답
+  demoSend = (m) => {
+    if (m.t === 'answer' && waiting && m.id === waiting.id) waiting.resolve(m.value);
+    else if (m.t === 'lobby' || m.t === 'leave') location.reload();   // 끝난 뒤 버튼 → 처음부터 다시
+  };
+  push();
+  onFx({ kind: 'announce', text: '보스전! 지호 vs 마법사', icon: '🧙', big: true, pid: null });
+  await wait(4500);
+  let promptId = 100;
+  while (Math.max(b.heroWins, b.wizWins) < b.need && b.round < 7) {
+    b.round += 1; b.stage = 'roll'; b.last = null;
+    const id = ++promptId;
+    state.prompts = [{ id, pid: 1, kind: 'timing', title: '주사위를 멈춰라! (1~10)', options: [], deadline: Date.now() + 8000, meta: { boss: true } }];
+    push();
+    const heroDie = await new Promise((resolve) => {
+      waiting = { id, resolve };
+      setTimeout(() => resolve(1 + rand(10)), 8000);   // 시간 안에 못 누르면 랜덤
+    });
+    waiting = null;
+    state.prompts = [];
+    const cheers = 1 + rand(4), wizardDie = 1 + rand(10);     // 동료 4명 중 1~4명이 응원
+    const heroTotal = heroDie + cheers, wizardTotal = wizardDie + b.bonus;
+    const winner = heroTotal > wizardTotal ? 'hero' : heroTotal < wizardTotal ? 'wizard' : 'tie';
+    if (winner === 'hero') b.heroWins += 1; else if (winner === 'wizard') b.wizWins += 1;
+    b.last = { round: b.round, heroDie, cheers, heroTotal, wizardDie, wizardTotal, winner };
+    b.stage = 'reveal';
+    b.line = pick(LINES[winner]);
+    push();
+    await wait(4000);
+  }
+  const ending = b.heroWins >= b.wizWins ? 'good' : 'bad';
+  Object.assign(b, { stage: 'done', last: null, line: pick(LINES[ending]) });
+  Object.assign(state, { phase: 'end', step: null, ending });
+  push();
+}
+
 const demo = new URLSearchParams(location.search).get('demo');
-if (['good', 'bad', 'boss', 'final'].includes(demo)) {
+if (demo === 'boss-play') {
+  myId = 1; board.myId = 1;
+  introSeen = true;
+  demoBossPlay();
+} else if (DEMOS.includes(demo)) {
   myId = 1; board.myId = 1;
   introSeen = true;
   onRoom(demoRoom(demo));

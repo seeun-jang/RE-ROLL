@@ -162,10 +162,47 @@ const LIFT = 34;   // 인트로 그림을 위로 올리는 높이
 // 영상 파일(assets/intro.mp4)은 페이지가 열릴 때 미리 통째로 받아 둔다.
 // 재생하면서 조금씩 받아 오면 중간에 끊길 수 있어서, 다 받은 뒤 메모리에 있는 것을 튼다.
 // 파일이 없으면 null → 그림 4장으로 대신한다.
-const film = fetch('assets/intro.mp4')
+const loadFilm = (path) => fetch(path)
   .then((r) => (r.ok && (r.headers.get('content-type') || '').startsWith('video') ? r.blob() : null))
   .then((blob) => (blob ? URL.createObjectURL(blob) : null))
   .catch(() => null);
+const film = loadFilm('assets/intro.mp4');
+// 엔딩 영상: 굿엔딩(해피) · 배드엔딩. 없으면 영상 없이 바로 엔딩 화면(도트 그림)으로 간다.
+const endingFilms = { good: loadFilm('assets/ending-good.mp4'), bad: loadFilm('assets/ending-bad.mp4') };
+
+/**
+ * 엔딩 영상을 화면 전체로 튼다. 끝나거나 SKIP 을 누르면(또는 영상 파일이 없으면) onDone() 을 한 번 부른다.
+ * kind: 'good' | 'bad' · el: { film, video, filmSkip, loading } · 돌려준 함수를 부르면 중간에 멈춘다(onDone 없이).
+ */
+export function playEndingFilm(el, kind, onDone) {
+  let over = false;
+  const finish = (call) => {
+    if (over) return;
+    over = true;
+    el.video.pause(); el.video.removeAttribute('src'); el.video.load();
+    el.film.classList.add('hidden');
+    el.filmSkip.onclick = null;
+    removeEventListener('keydown', onKey, true);
+    if (call) onDone();
+  };
+  const onKey = (e) => {
+    if (['Escape', 'Space', 'Enter'].includes(e.code)) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) finish(true); }
+  };
+  el.filmSkip.onclick = (e) => { e.stopPropagation(); finish(true); };
+  addEventListener('keydown', onKey, true);
+  el.film.classList.remove('hidden');
+  el.loading.classList.remove('hidden');
+  endingFilms[kind].then((url) => {
+    if (over) return;
+    el.loading.classList.add('hidden');
+    if (!url) return finish(true);
+    el.video.muted = false;
+    el.video.src = url;
+    el.video.onended = () => finish(true);
+    el.video.play().catch(() => { el.video.muted = true; el.video.play().catch(() => finish(true)); });
+  });
+  return () => finish(false);
+}
 
 /**
  * 인트로를 튼다. 끝나거나 SKIP 을 누르면 onDone() 을 한 번 부른다. 돌려준 함수를 부르면 중간에 멈춘다(onDone 없이).
@@ -224,6 +261,7 @@ export function playIntro(el, onDone) {
       return next();
     }
     mode = 'film';
+    el.video.muted = false;
     el.video.src = url;
     el.video.onended = () => finish(true);
     el.video.play().catch(() => { el.video.muted = true; el.video.play().catch(() => finish(true)); });
