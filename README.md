@@ -5,7 +5,9 @@
 
 ![RE:ROLL 메인 키아트](party-python/board/assets/keyart.webp)
 
-[🎮 게임 플레이](https://reroll-party.onrender.com/party/) · [📖 미니게임 통신 규격](party-python/docs/COMMON_SPEC.md)
+[🎮 게임 플레이하기](https://reroll-party.onrender.com/party/) <- 누르면 게임을 실행할 수 있습니다!
+
+[📖 미니게임 통신 규격](party-python/docs/COMMON_SPEC.md)
 
 RE:ROLL은 **5명이 각자의 기기에서 참여하는 2D 판타지 파티게임**입니다. 주사위로 보드 위를 이동하고 이벤트를 경험하며, 다양한 AI 기술을 활용한 **미니게임 20종 중 무작위로 선정되는 게임**을 통해 점수를 쌓습니다. **매 라운드 탈락자는 없으며 다섯 명 모두 끝까지 플레이합니다.** 게임 종료 시 **누적 점수 1위가 마법사 보스전에 진출**하고 승패에 따라 엔딩이 달라집니다.
 
